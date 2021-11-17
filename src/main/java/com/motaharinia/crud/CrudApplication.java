@@ -17,19 +17,23 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-public class App extends Application<Configuration> {
+public class CrudApplication extends Application<CrudConfiguration> {
 
     @Override
-    public void initialize(Bootstrap<Configuration> b) {
+    public void initialize(Bootstrap<CrudConfiguration> b) {
     }
 
     @Override
-    public void run(Configuration c, Environment e) throws Exception {
+    public void run(CrudConfiguration c, Environment e) throws Exception {
+        log.info("--------------- {}", c.getDefaultName());
+        log.info("--------------- {}", c.getTemplate());
+
         log.info("Registering REST resources");
         e.jersey().register(new EmployeeRESTController(e.getValidator()));
     }
 
     public static void main(String[] args) throws Exception {
-        new App().run(args);
+        new CrudApplication().run(args);
+//        new CrudApplication().run("server", "crud.yml");
     }
 }

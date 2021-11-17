@@ -1,0 +1,2 @@
+CLI arguments to run in intellij idea:
+server crud.yml

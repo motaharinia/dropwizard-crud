@@ -27,7 +27,6 @@ public class MemberController {
     public Response create(MemberDto dto) throws URISyntaxException {
         // validation
         Set<ConstraintViolation<MemberDto>> violations = validator.validate(dto);
-//        Member entity = MemberDB.readById(dto.getId());
         if (violations.size() > 0) {
             ArrayList<String> validationMessages = new ArrayList<String>();
             for (ConstraintViolation<MemberDto> violation : violations) {
@@ -36,12 +35,6 @@ public class MemberController {
             return Response.status(Response.Status.BAD_REQUEST).entity(validationMessages).build();
         }
         return Response.ok(memberService.create(dto)).build();
-//        if (entity != null) {
-//            MemberDB.update(dto.getId(), dto);
-//            return Response.created(new URI("/employees/" + dto.getId()))
-//                    .build();
-//        } else
-//            return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET
@@ -53,18 +46,18 @@ public class MemberController {
     @Path("/{id}")
     public Response readById(@PathParam("id") Long id) {
         return Response.ok(memberService.readById(id)).build();
-//        if (dto != null)
-//            return Response.ok(dto).build();
-//        else
-//            return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    @GET
+    @Path("/national-code/{nationalCode}")
+    public Response readByNationalCode(@PathParam("nationalCode") String nationalCode) {
+        return Response.ok(memberService.readByNationalCode(nationalCode)).build();
     }
 
     @PUT
-    @Path("/{id}")
-    public Response update(@PathParam("id") Long id, MemberDto dto) {
+    public Response update(MemberDto dto) {
         // validation
         Set<ConstraintViolation<MemberDto>> violations = validator.validate(dto);
-//        Member e = MemberDB.readById(dto.getId());
         if (violations.size() > 0) {
             ArrayList<String> validationMessages = new ArrayList<String>();
             for (ConstraintViolation<MemberDto> violation : violations) {
@@ -73,24 +66,11 @@ public class MemberController {
             return Response.status(Response.Status.BAD_REQUEST).entity(validationMessages).build();
         }
         return Response.ok(memberService.update(dto)).build();
-//        if (e != null) {
-//            dto.setId(id);
-//            MemberDB.update(id, dto);
-//            return Response.ok(dto).build();
-//        } else
-//            return Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
         return Response.ok(memberService.delete(id)).build();
-
-//        Member member = MemberDB.readById(id);
-//        if (member != null) {
-//            MemberDB.delete(id);
-//            return Response.ok().build();
-//        } else
-//            return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

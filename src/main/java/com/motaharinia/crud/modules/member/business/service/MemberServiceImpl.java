@@ -28,6 +28,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberMapper mapper;
     private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_DUPLICATE = "BUSINESS_EXCEPTION.NATIONAL_CODE_DUPLICATE";
     private static final String BUSINESS_EXCEPTION_ID_NOT_FOUND = "BUSINESS_EXCEPTION.ID_NOT_FOUND";
+    private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND = "BUSINESS_EXCEPTION.NATIONAL_CODE_NOT_FOUND";
 
     public MemberServiceImpl(MemberDao memberDao) {
         this.memberDao = memberDao;
@@ -49,8 +50,8 @@ public class MemberServiceImpl implements MemberService {
         }
         //ثبت
         Member member=this.mapper.toEntity(memberDto);
-        memberDao.save(member);
-        memberDto.setId(member.getId());
+        Long id=memberDao.create(member);
+        memberDto.setId(id);
 
         return memberDto;
     }
@@ -66,6 +67,20 @@ public class MemberServiceImpl implements MemberService {
     public @NotNull MemberDto readById(@NotNull Long id) {
         //بررسی وجود شناسه و جستجو
         Member member = memberDao.findById(id).orElseThrow(() -> new MemberException(id.toString(), BUSINESS_EXCEPTION_ID_NOT_FOUND + "::" + id, ""));
+        System.out.println("member.getId():"+member.getId());
+        return mapper.toDto(member);
+    }
+
+    /**
+     * متد جستجو با کد ملی
+     *
+     * @param nationalCode کد ملی
+     * @return خروجی: مدل جستجو شده
+     */
+    @Override
+    public @NotNull MemberDto readByNationalCode(@NotNull String nationalCode) {
+        //بررسی وجود کدملی و جستجو
+        Member member = memberDao.findByNationalCode(nationalCode).orElseThrow(() -> new MemberException(nationalCode.toString(), BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND + "::" + nationalCode, ""));
         return mapper.toDto(member);
     }
 
@@ -94,7 +109,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberDao.findById(memberDto.getId()).orElseThrow(() -> new MemberException(memberDto.getId().toString(), BUSINESS_EXCEPTION_ID_NOT_FOUND + "::" + memberDto.getId(), ""));
         //ویرایش
         mapper.updateEntity(memberDto,member);
-        memberDao.save(member);
+        memberDao.update(member);
         return memberDto;
     }
 
@@ -108,8 +123,7 @@ public class MemberServiceImpl implements MemberService {
     @NotNull
     public MemberDto delete(@NotNull Long id) {
         //بررسی وجود شناسه و جستجو
-        Member member = memberDao.findById(id).orElseThrow(() -> new MemberException(id.toString(), BUSINESS_EXCEPTION_ID_NOT_FOUND + "::" + id, ""));
-        MemberDto memberDto = mapper.toDto(member);
+        MemberDto memberDto = this.readById(id);
         //حذف
         memberDao.delete(id);
         return memberDto;

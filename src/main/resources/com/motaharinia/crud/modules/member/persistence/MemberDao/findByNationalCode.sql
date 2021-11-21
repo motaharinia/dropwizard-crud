@@ -1,0 +1,1 @@
+SELECT * FROM member WHERE national_code = :nationalCode

@@ -25,9 +25,9 @@
         <org.projectlombok.version>1.18.14</org.projectlombok.version>
         <!--plugin-->
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
+        <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.shade.plugin.version>3.2.0</maven.shade.plugin.version>
         <jacoco.maven.plugin.version>0.8.6</jacoco.maven.plugin.version>
         <liquibase-maven-plugin.version>3.10.1</liquibase-maven-plugin.version>
@@ -109,7 +109,7 @@
             </resource>
         </resources>
         <plugins>
-            <!--  maven config with mapstruct and lombok-->
+            <!--  maven compiler (with mapstruct and lombok)-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -137,22 +137,13 @@
                     <compilerArgs>
                         <arg>-sourcepath</arg>
                         <arg>${project.basedir}/src/main/java${path.separator}${project.basedir}/target/generated-sources/annotations${path.separator}/</arg>
+                        <arg>-parameters</arg>
                     </compilerArgs>
-                </configuration>
-            </plugin>
-            <!--maven doesnt change jks file in the build-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
-                <configuration>
-                    <nonFilteredFileExtensions>
-                        <nonFilteredFileExtension>jks</nonFilteredFileExtension>
-                    </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
             <!--maven attach source-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>${maven.source.plugin.version}</version>
                 <executions>
@@ -166,6 +157,7 @@
             </plugin>
             <!--maven attach javadoc-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven.javadoc.plugin.version}</version>
                 <executions>
@@ -176,6 +168,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!--maven attach resource (doesnt change jks file in the build)-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven.resources.plugin.version}</version>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>jks</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
             </plugin>
             <!--maven-shade-plugin-->
             <plugin>

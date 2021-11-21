@@ -31,6 +31,14 @@ public interface MemberService {
     @NotNull
     MemberDto readById(@NotNull Long id);
 
+    /**
+     * متد جستجو با کد ملی
+     *
+     * @param nationalCode کد ملی
+     * @return خروجی: مدل جستجو شده
+     */
+    @NotNull
+    MemberDto readByNationalCode(@NotNull String nationalCode);
 
     /**
      * متد جستجو همه موارد

@@ -1,5 +1,8 @@
 package com.motaharinia.crud.modules.member.presentation;
 
+import com.motaharinia.crud.utility.custom.customvalidation.nationalcode.NationalCode;
+import com.motaharinia.crud.utility.custom.customvalidation.required.Required;
+import com.motaharinia.crud.utility.custom.customvalidation.stringlength.StringLength;
 import lombok.Data;
 
 
@@ -13,24 +16,24 @@ public class MemberDto {
     /**
      * نام
      */
-//    @Required
-//    @StringLength(min = 3)
+    @Required
+    @StringLength(min = 3)
     private String firstName;
     /**
      * نام خانوادگی
      */
-//    @Required
-//    @StringLength(min = 3)
+    @Required
+    @StringLength(min = 3)
     private String lastName;
     /**
      * کد ملی
      */
-//    @Required
-//    @NationalCode
+    @Required
+    @NationalCode
     private String nationalCode;
     /**
      *تاریخ تولد
      */
-//    @Required
+    @Required
     private Long dateOfBirth;
 }

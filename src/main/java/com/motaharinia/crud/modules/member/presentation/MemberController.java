@@ -1,76 +1,60 @@
 package com.motaharinia.crud.modules.member.presentation;
 
 import com.motaharinia.crud.modules.member.business.service.MemberService;
+import com.motaharinia.crud.utility.custom.customdto.ClientResponseDto;
 
-import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 
 @Path("/api/v1.0/member")
 @Produces(MediaType.APPLICATION_JSON)
 public class MemberController {
 
-    private final Validator validator;
     private final MemberService memberService;
 
-    public MemberController(Validator validator,MemberService memberService) {
-        this.validator = validator;
+    /**
+     * پیام موفقیت فرم
+     */
+    private static final String FORM_SUBMIT_SUCCESS = "USER_MESSAGE.FORM_SUBMIT_SUCCESS";
+
+    public MemberController( MemberService memberService) {
         this.memberService = memberService;
     }
 
     @POST
-    public Response create(MemberDto dto) throws URISyntaxException {
-        // validation
-        Set<ConstraintViolation<MemberDto>> violations = validator.validate(dto);
-        if (violations.size() > 0) {
-            ArrayList<String> validationMessages = new ArrayList<String>();
-            for (ConstraintViolation<MemberDto> violation : violations) {
-                validationMessages.add(violation.getPropertyPath().toString() + ": " + violation.getMessage());
-            }
-            return Response.status(Response.Status.BAD_REQUEST).entity(validationMessages).build();
-        }
-        return Response.ok(memberService.create(dto)).build();
+    public ClientResponseDto<MemberDto> create(@Valid MemberDto dto) throws URISyntaxException {
+        return new ClientResponseDto<>(memberService.create(dto), FORM_SUBMIT_SUCCESS);
     }
 
     @GET
-    public Response readAll() {
-        return Response.ok(memberService.readAll()).build();
+    public ClientResponseDto<List<MemberDto>> readAll() {
+        return new ClientResponseDto<>(memberService.readAll(), FORM_SUBMIT_SUCCESS);
     }
 
     @GET
     @Path("/{id}")
-    public Response readById(@PathParam("id") Long id) {
-        return Response.ok(memberService.readById(id)).build();
+    public ClientResponseDto<MemberDto> readById(@PathParam("id") Long id) {
+        return new ClientResponseDto<>(memberService.readById(id), FORM_SUBMIT_SUCCESS);
     }
 
     @GET
     @Path("/national-code/{nationalCode}")
-    public Response readByNationalCode(@PathParam("nationalCode") String nationalCode) {
-        return Response.ok(memberService.readByNationalCode(nationalCode)).build();
+    public ClientResponseDto<MemberDto> readByNationalCode(@PathParam("nationalCode") String nationalCode) {
+        return new ClientResponseDto<>(memberService.readByNationalCode(nationalCode), FORM_SUBMIT_SUCCESS);
     }
 
     @PUT
-    public Response update(MemberDto dto) {
-        // validation
-        Set<ConstraintViolation<MemberDto>> violations = validator.validate(dto);
-        if (violations.size() > 0) {
-            ArrayList<String> validationMessages = new ArrayList<String>();
-            for (ConstraintViolation<MemberDto> violation : violations) {
-                validationMessages.add(violation.getPropertyPath().toString() + ": " + violation.getMessage());
-            }
-            return Response.status(Response.Status.BAD_REQUEST).entity(validationMessages).build();
-        }
-        return Response.ok(memberService.update(dto)).build();
+    public ClientResponseDto<MemberDto> update(@Valid MemberDto dto) {
+        return new ClientResponseDto<>(memberService.update(dto), FORM_SUBMIT_SUCCESS);
     }
 
     @DELETE
     @Path("/{id}")
-    public Response delete(@PathParam("id") Long id) {
-        return Response.ok(memberService.delete(id)).build();
+    public ClientResponseDto<MemberDto> delete(@PathParam("id") Long id) {
+        return new ClientResponseDto<>(memberService.delete(id), FORM_SUBMIT_SUCCESS);
     }
 }

@@ -1,6 +1,10 @@
 package com.motaharinia.crud;
 
 import com.codahale.metrics.jdbi3.InstrumentedSqlLogger;
+import com.miao.easyi18n.support.ResourceBundleMessageSource;
+import com.motaharinia.crud.config.log.rest.RestBusinessExceptionTranslator;
+import com.motaharinia.crud.config.log.rest.RestConstraintViolationExceptionTranslator;
+import com.motaharinia.crud.config.mvc.MessageServiceImpl;
 import com.motaharinia.crud.modules.member.business.service.MemberService;
 import com.motaharinia.crud.modules.member.business.service.MemberServiceImpl;
 import com.motaharinia.crud.modules.member.persistence.MemberDao;
@@ -10,11 +14,12 @@ import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.jdbi3.bundles.JdbiExceptionsBundle;
 import io.dropwizard.migrations.MigrationsBundle;
+import io.dropwizard.server.AbstractServerFactory;
+import io.dropwizard.server.ServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.statement.Slf4JSqlLogger;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 
@@ -22,12 +27,12 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 //https://medium.com/swlh/how-to-design-restful-web-services-with-dropwizard-d5681a127cba
 //https://readthedocs.org/projects/dropwizard/downloads/pdf/latest/
 
-//---------- pom maven
+//---------- pom maven:
 //https://github.com/soabase/soabase/blob/master/pom.xml
 //https://www.programcreek.com/java-api-examples/?code=soabase%2Fsoabase%2Fsoabase-master%2Fsoabase-jdbi%2Fsrc%2Ftest%2Fjava%2Fio%2Fsoabase%2Fjdbi%2Fattributes%2FTestJdbiDynamicAttributes.java#
 //https://maven.apache.org/plugin-developers/cookbook/attach-source-javadoc-artifacts.html
 
-//---------- jdbi3
+//---------- jdbi3:
 //https://jdbi.org/#_core_api
 //https://github.com/Manikandan-K/jdbi-folder
 //https://stackoverflow.com/questions/44769057/upgrading-dropwizard-jdbi-to-jdbi-3
@@ -38,17 +43,24 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 //https://www.programcreek.com/java-api-examples/?api=org.jdbi.v3.core.Jdbi
 //https://www.tabnine.com/code/java/methods/io.dropwizard.jdbi.logging.LogbackLog/%3Cinit%3E
 
-//---------- liquibase
+//---------- liquibase:
 //https://junctionbox.ca/2013/05/10/dropwizard-liquibase-migrations.html
 
-//---------- mapstruct
+//---------- mapstruct:
 //https://mapstruct.org/documentation/stable/reference/html/#using-dependency-injection
 //https://github.com/saurabh-86/dropwizard-basic
 
-//---------- logging
+//---------- logging:
 //https://github.com/dropwizard/dropwizard/blob/master/dropwizard-logging/src/test/resources/yaml/logging.yml
 //https://alvinalexander.com/java/jwarehouse/deeplearning4j/deeplearning4j-scaleout/deeplearning4j-scaleout-akka/src/main/resources/hazelcast/dropwizard.yml.shtml
-//
+
+//---------- resource exception handling:
+//https://stackoverflow.com/questions/41192968/how-can-i-override-dropwizards-default-resource-exception-handling
+
+//---------- i18n-internationalization:
+//https://programmerall.com/article/8096310810/
+//https://titanwolf.org/Network/Articles/Article?AID=25095f99-5c5a-465d-b08d-5a26314c7c88
+
 
 /**
  * Hello world!
@@ -97,6 +109,21 @@ public class CrudApplication extends Application<CrudConfiguration> {
         jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
 //        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
 
+
+        //سرویس ترجمه
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.addBasenames("lang/businessexception", "lang/comboitem", "lang/customvalidation", "lang/exception", "lang/notification", "lang/usermessages");
+        messageSource.setDefaultEncoding("UTF-8");
+        environment.jersey().register(messageSource);
+
+//        //تنظیم مدیریت یکپارچه خطاها
+        ServerFactory serverFactory = configuration.getServerFactory();
+        if (serverFactory instanceof AbstractServerFactory) {
+            ((AbstractServerFactory) serverFactory).setRegisterDefaultExceptionMappers(false);
+        }
+        environment.jersey().register(new RestBusinessExceptionTranslator(new MessageServiceImpl(messageSource)));
+        environment.jersey().register(new RestConstraintViolationExceptionTranslator(new MessageServiceImpl(messageSource)));
+
         //تعریف کلاسهای مدیریت دسترسی داده
         final MemberDao memberDao = jdbi.onDemand(MemberDao.class);
 
@@ -104,7 +131,7 @@ public class CrudApplication extends Application<CrudConfiguration> {
         final MemberService memberService = new MemberServiceImpl(memberDao);
 
         //تعریف کلاسهای کنترلر
-        environment.jersey().register(new MemberController(environment.getValidator() , memberService));
+        environment.jersey().register(new MemberController(memberService));
     }
 
     public static void main(String[] args) throws Exception {

@@ -1,0 +1,27 @@
+//این فایل فعلا در هیچ پروژه ای استفاده نمیشود و به دلیل داشتن سمپل اینام نگه داشته شده است
+syntax = "proto3";
+option java_package = "com.motaharinia.client.project.modules.member.rpc.stub.findbyid";
+option java_outer_classname = "MemberFindByIdProto";
+option java_multiple_files = true;
+
+service Member{
+  rpc ReadById(MemberReadByIdRequestDto)  returns (MemberResponseDto);
+}
+
+message MemberReadByIdRequestDto{
+  int64 id = 1 ;
+}
+
+message MemberResponseDto{
+  string responseMessage = 1;
+  int32 responseCode = 2;
+  int64 id = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string nationalCode = 6;
+  int64 dateOfBirth = 7;
+  int64 createAt = 8;
+  int64 updateAt = 9;
+  bool invalid = 10;
+  bool hidden = 11;
+}

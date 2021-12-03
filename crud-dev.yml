@@ -1,5 +1,7 @@
-appProfile: dev
-appName: dropwizard-crud
+app:
+  profile: dev
+  name: dropwizard-crud
+  grpcPort: 9090
 
 server:
   type: default

@@ -61,7 +61,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.motaharinia.crud.CrudApplication</mainClass>
+                  <mainClass>com.motaharinia.CrudApplication</mainClass>
                 </transformer>
                 <transformer />
               </transformers>

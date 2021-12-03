@@ -121,7 +121,7 @@ public interface StringTools {
     /**
      * این متد رشته ای تصادفی را با توجه به نوع ، طول و اینکه اعداد با پیش صفر باشند یا خیر را تولید میکند
      *
-     * @param randomGenerationTypeEnum نوع ترکیب رشته تصادفی
+     * @param randomGenerationTypeEnum نوع ترکیب رشته
      * @param length                   طول رشته مورد نظر
      * @param withLeadingZero          با صفر شروع شود؟
      * @return خروجی: رشته تصادفی
@@ -137,36 +137,50 @@ public interface StringTools {
         if (ObjectUtils.isEmpty(withLeadingZero)) {
             throw new UtilityException(StringTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "withLeadingZero");
         }
-
         String characters = getCharacters(randomGenerationTypeEnum);
-
-
-        int charactersLength = characters.length();
-        int randomNum;
-        char randomChar;
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            randomNum = RANDOM.nextInt(charactersLength);
-            randomChar = characters.charAt(randomNum);
-            if ((i == 0) && (!withLeadingZero)) {
-                while (( randomChar == 48)) {
-                    randomNum = RANDOM.nextInt((charactersLength - 1));
-                    randomChar = characters.charAt(randomNum);
-                }
-            }
-            //در حالت رشته ای در ابتدا یا انتها حرف فاصله نباشد
-            if ((i == 0) || (i == length - 1)) {
-                while (( randomChar == 32)) {
-                    randomNum = RANDOM.nextInt((charactersLength - 1));
-                    randomChar = characters.charAt(randomNum);
-                }
-            }
-            stringBuilder.append(randomChar);
+            stringBuilder.append(characters.charAt(RANDOM.nextInt(characters.length())));
         }
+        checkBlankZero(stringBuilder, characters, length, withLeadingZero);
         return stringBuilder.toString();
     }
 
-    static String getCharacters(@NotNull RandomGenerationTypeEnum randomGenerationTypeEnum){
+    /**
+     * متد بررسی جای خالی و عدد صفر در رشته تولید شده
+     *
+     * @param stringBuilder   شیی سازنده رشته
+     * @param characters      رشته حاوی کارکترهای مورد نظر
+     * @param length          طول رشته مورد نظر
+     * @param withLeadingZero با صفر شروع شود؟
+     */
+    static void checkBlankZero(@NotNull StringBuilder stringBuilder, @NotNull String characters, @NotNull Integer length, @NotNull Boolean withLeadingZero) {
+        //بررسی عدم وجود صفر در ابتدای رشته با بررسی withLeadingZero
+        if (((stringBuilder.toString().charAt(0)) == 48) && (!withLeadingZero)) {
+            stringBuilder.deleteCharAt(0);
+            stringBuilder.insert(0, characters.charAt(RANDOM.nextInt(characters.length())));
+            checkBlankZero(stringBuilder, characters, length, withLeadingZero);
+        }
+        //بررسی عدم وجود جای خالی در ابتدا و انتهای رشته
+        if (Character.isWhitespace(stringBuilder.toString().charAt(0))) {
+            stringBuilder.deleteCharAt(0);
+            stringBuilder.insert(0, characters.charAt(RANDOM.nextInt(characters.length())));
+            checkBlankZero(stringBuilder, characters, length, withLeadingZero);
+        }
+        if (Character.isWhitespace(stringBuilder.toString().charAt(length - 1))) {
+            stringBuilder.deleteCharAt(length - 1);
+            stringBuilder.append(characters.charAt(RANDOM.nextInt(characters.length())));
+            checkBlankZero(stringBuilder, characters, length, withLeadingZero);
+        }
+    }
+
+    /**
+     * متد تولید رشته حاوی کارکترهای مورد نظر
+     *
+     * @param randomGenerationTypeEnum نوع ترکیب رشته
+     * @return خروجی: رشته حاوی کارکترهای مورد نظر
+     */
+    static String getCharacters(@NotNull RandomGenerationTypeEnum randomGenerationTypeEnum) {
         switch (randomGenerationTypeEnum) {
             case LATIN_CHARACTERS:
                 return CHARACTERS_LOWER + CHARACTERS_UPPER;
@@ -183,7 +197,7 @@ public interface StringTools {
             case LATIN_CHARACTERS_NUMBERS_PUNCTUATIONS:
                 return CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS + PUNCTUATIONS;
             case LATIN_CHARACTERS_NUMBERS_UNDERLINE:
-                return  CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS + "_";
+                return CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS + "_";
             case NUMBERS_UNDERLINE:
                 return NUMBERS + "_";
             case PERSIAN_CHARACTERS_SPACE:
@@ -193,7 +207,6 @@ public interface StringTools {
             default:
                 return "";
         }
-
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.Set;
  */
 public interface ExceptionTools {
 
+    String MASK = "here is production";
 
     /**
      * متد ترجمه خطا از خطای بیزینس و ایجاد مدل فرانت
@@ -195,20 +196,19 @@ public interface ExceptionTools {
         ClientResponseDto<Void> clientResponseDto = new ClientResponseDto<>(exceptionDto, exceptionDto.getMessage());
         //مخفی نمودن شرح فنی در پروفایلهای خاص مانند پروداکشن
         if (ObjectUtils.isNotEmpty(maskedProfileList) && maskedProfileList.contains(exceptionDto.getAppProfile())) {
-            String mask = "here is production";
-            clientResponseDto.getException().setExceptionClassName(mask);
-            clientResponseDto.getException().setAppPort(mask);
-            clientResponseDto.getException().setDescription(mask);
-            clientResponseDto.getException().setDataId(mask);
+            clientResponseDto.getException().setExceptionClassName(MASK);
+            clientResponseDto.getException().setAppPort(MASK);
+            clientResponseDto.getException().setDescription(MASK);
+            clientResponseDto.getException().setDataId(MASK);
             clientResponseDto.getException().getMessageDtoList().forEach(item -> {
-                item.setStackTrace(mask);
-                item.setStackTraceLine(mask);
-                item.setMessage(mask);
+                item.setStackTrace(MASK);
+                item.setStackTraceLine(MASK);
+                item.setMessage(MASK);
             });
 
             if (clientResponseDto.getException().getType().equals(ExceptionTypeEnum.GENERAL_EXCEPTION)) {
-                clientResponseDto.setMessage(mask);
-                clientResponseDto.getException().setMessage(mask);
+                clientResponseDto.setMessage(MASK);
+                clientResponseDto.getException().setMessage(MASK);
             }
         }
         return clientResponseDto;

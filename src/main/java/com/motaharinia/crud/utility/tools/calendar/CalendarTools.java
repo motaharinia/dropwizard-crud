@@ -1,6 +1,5 @@
 package com.motaharinia.crud.utility.tools.calendar;
 
-
 import com.motaharinia.crud.utility.custom.customexception.utility.UtilityException;
 import com.motaharinia.crud.utility.custom.customexception.utility.UtilityExceptionKeyEnum;
 import com.motaharinia.crud.utility.custom.customfield.CustomDate;
@@ -24,6 +23,10 @@ import java.util.Locale;
  */
 public interface CalendarTools {
 
+    String TIME_FORMAT= "HH:mm:ss";
+    String DATE_TIME_FORMAT= "yyyy-MM-dd HH:mm:ss";
+    String ZERO_TIME_WITH_MILLISECONDS = "T00:00:00.00";
+    String SOURCE_DESCRIPTION = "source";
     /**
      * کلاس مبدل تاریخ میلادی و جلالی
      */
@@ -125,7 +128,7 @@ public interface CalendarTools {
         if (ObjectUtils.isEmpty(dateDelimiter)) {
             throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, EXCEPTION_EMPTY_DATE_DELIMITER);
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy" + dateDelimiter + "MM" + dateDelimiter + "dd HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy" + dateDelimiter + "MM" + dateDelimiter + "dd "+  TIME_FORMAT, Locale.ENGLISH);
         return simpleDateFormat.format(new Date());
     }
 
@@ -154,7 +157,7 @@ public interface CalendarTools {
         if (ObjectUtils.isEmpty(dateDelimiter)) {
             throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "dateDelimiter");
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIME_FORMAT, Locale.ENGLISH);
         return fixDateSlash(jalaliCalendar.getJalaliDate(new Date()), dateDelimiter) + " " + simpleDateFormat.format(new Date());
     }
 
@@ -290,7 +293,7 @@ public interface CalendarTools {
         if (sourceArray.length > 1) {
             zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + "T" + sourceArray[1] + ".00"), zoneId);
         } else {
-            zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + "T00:00:00.00"), zoneId);
+            zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + ZERO_TIME_WITH_MILLISECONDS), zoneId);
         }
         return zonedDateTime.toInstant();
     }
@@ -313,7 +316,7 @@ public interface CalendarTools {
         }
         String[] sourceArray = source.split(" ", -1);
         String gregorianDateString = jalaliToGregorianString(sourceArray[0], sourceDateDelimiter, "-");
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + "T00:00:00.00"), zoneId);
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + ZERO_TIME_WITH_MILLISECONDS), zoneId);
         return zonedDateTime.toLocalDate();
     }
 
@@ -340,7 +343,7 @@ public interface CalendarTools {
         if (sourceArray.length > 1) {
             zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + "T" + sourceArray[1] + ".00"), zoneId);
         } else {
-            zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + "T00:00:00.00"), zoneId);
+            zonedDateTime = ZonedDateTime.of(LocalDateTime.parse(gregorianDateString + ZERO_TIME_WITH_MILLISECONDS), zoneId);
         }
         return zonedDateTime.toLocalDateTime();
     }
@@ -391,11 +394,11 @@ public interface CalendarTools {
     @NotNull
     static String gregorianToJalaliString(@NotNull Date source, @NotNull String destinationDateDelimiter, boolean withTime) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, SOURCE_DESCRIPTION);
         }
         if (withTime) {
             LocalDateTime localDateTime = source.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            return fixDateSlash(jalaliCalendar.getJalaliDate(source), destinationDateDelimiter) + " " + localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            return fixDateSlash(jalaliCalendar.getJalaliDate(source), destinationDateDelimiter) + " " + localDateTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT));
         } else {
             return fixDateSlash(jalaliCalendar.getJalaliDate(source), destinationDateDelimiter);
         }
@@ -412,12 +415,12 @@ public interface CalendarTools {
     @NotNull
     static String gregorianToJalaliString(@NotNull Instant source, @NotNull String destinationDateDelimiter, boolean withTime) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY,SOURCE_DESCRIPTION);
         }
         Date destination = Date.from(source);
         if (withTime) {
             LocalDateTime localDateTime = destination.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            return fixDateSlash(jalaliCalendar.getJalaliDate(destination), destinationDateDelimiter) + " " + localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            return fixDateSlash(jalaliCalendar.getJalaliDate(destination), destinationDateDelimiter) + " " + localDateTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT));
         } else {
             return fixDateSlash(jalaliCalendar.getJalaliDate(destination), destinationDateDelimiter);
         }
@@ -434,7 +437,7 @@ public interface CalendarTools {
     @NotNull
     static String gregorianToJalaliString(@NotNull LocalDate source, @NotNull String destinationDateDelimiter, boolean withTime) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY,SOURCE_DESCRIPTION);
         }
         Date destination = Date.from(source.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
         if (withTime) {
@@ -455,7 +458,7 @@ public interface CalendarTools {
     @NotNull
     static String gregorianToJalaliString(@NotNull LocalDateTime source, @NotNull String destinationDateDelimiter, boolean withTime) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY,SOURCE_DESCRIPTION);
         }
         Date destination = Date.from(source.atZone(ZoneId.systemDefault()).toInstant());
         if (withTime) {
@@ -496,7 +499,7 @@ public interface CalendarTools {
     @NotNull
     static CustomDateTime gregorianToJalaliCustomDateTime(@NotNull Date source) {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY,SOURCE_DESCRIPTION);
         }
         CustomDateTime destinationCustomDateTime = new CustomDateTime();
         Calendar calendar = Calendar.getInstance();
@@ -655,12 +658,12 @@ public interface CalendarTools {
     @NotNull
     static String fixToLocaleDateTime(@NotNull Date source, @NotNull String destinationDateDelimiter, Locale locale) throws ParseException {
         if (ObjectUtils.isEmpty(source)) {
-            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "source");
+            throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY,SOURCE_DESCRIPTION);
         }
         if (ObjectUtils.isEmpty(destinationDateDelimiter)) {
             throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "destinationDateDelimiter");
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_TIME_FORMAT, Locale.ENGLISH);
         return fixToLocaleDateTime(simpleDateFormat.format(source), destinationDateDelimiter, locale);
     }
 
@@ -881,10 +884,8 @@ public interface CalendarTools {
             jalaliString = jalaliString.replace("_", delimiter);
         }
         //اصلاح جدا کننده تاریخ در حالتی که تاریخ بدون جدا کننده داده شده است مثل 13990225
-        if (!jalaliString.contains(delimiter)) {
-            if (jalaliString.length() > 7) {
-                jalaliString = jalaliString.substring(0, 4) + delimiter + jalaliString.substring(4, 6) + delimiter + jalaliString.substring(6, 8);
-            }
+        if ((!jalaliString.contains(delimiter)) && (jalaliString.length() > 7)) {
+            jalaliString = jalaliString.substring(0, 4) + delimiter + jalaliString.substring(4, 6) + delimiter + jalaliString.substring(6, 8);
         }
         return jalaliString;
     }

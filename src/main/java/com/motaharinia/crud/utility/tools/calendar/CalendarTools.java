@@ -9,7 +9,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jetbrains.annotations.NotNull;
 
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -64,7 +63,7 @@ public interface CalendarTools {
      * @return خروجی: رشته عدد دو رقمی شده
      */
     @NotNull
-    static String fixOneDigit(@NotNull int inputDigit) {
+    static String fixOneDigit(int inputDigit) {
         if (inputDigit < 0) {
             throw new UtilityException(CalendarTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "inputDigit");
         }

@@ -23,7 +23,7 @@ public enum RandomGenerationTypeEnum {
     /**
      * ترکیبی از اعداد
      */
-    NUMBER("NUMBER"),
+    NUMBER("NUMBERS"),
     /**
      * ترکیبی از حروف الفبای لاتین و اعداد
      */

@@ -2,7 +2,6 @@ package com.motaharinia.crud.modules.member.persistence;
 
 import com.motaharinia.crud.config.data.CrudDao;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
-import org.jdbi.v3.sqlobject.customizer.AllowUnusedBindings;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 

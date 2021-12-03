@@ -1,7 +1,6 @@
 package com.motaharinia.crud.modules.member.business.service;
 
 
-
 import com.motaharinia.crud.modules.member.business.exception.MemberException;
 import com.motaharinia.crud.modules.member.business.mapper.MemberMapper;
 import com.motaharinia.crud.modules.member.persistence.Member;
@@ -9,7 +8,6 @@ import com.motaharinia.crud.modules.member.persistence.MemberDao;
 import com.motaharinia.crud.modules.member.presentation.MemberDto;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
-
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +30,7 @@ public class MemberServiceImpl implements MemberService {
 
     public MemberServiceImpl(MemberDao memberDao) {
         this.memberDao = memberDao;
-        this.mapper=MemberMapper.INSTANCE;
+        this.mapper = MemberMapper.INSTANCE;
     }
 
     /**
@@ -49,8 +47,8 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(memberDto.getNationalCode(), BUSINESS_EXCEPTION_NATIONAL_CODE_DUPLICATE + "::" + memberDto.getNationalCode(), "");
         }
         //ثبت
-        Member member=this.mapper.toEntity(memberDto);
-        Long id=memberDao.create(member);
+        Member member = this.mapper.toEntity(memberDto);
+        Long id = memberDao.create(member);
         memberDto.setId(id);
 
         return memberDto;
@@ -67,7 +65,6 @@ public class MemberServiceImpl implements MemberService {
     public @NotNull MemberDto readById(@NotNull Long id) {
         //بررسی وجود شناسه و جستجو
         Member member = memberDao.findById(id).orElseThrow(() -> new MemberException(id.toString(), BUSINESS_EXCEPTION_ID_NOT_FOUND + "::" + id, ""));
-        System.out.println("member.getId():"+member.getId());
         return mapper.toDto(member);
     }
 
@@ -80,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public @NotNull MemberDto readByNationalCode(@NotNull String nationalCode) {
         //بررسی وجود کدملی و جستجو
-        Member member = memberDao.findByNationalCode(nationalCode).orElseThrow(() -> new MemberException(nationalCode.toString(), BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND + "::" + nationalCode, ""));
+        Member member = memberDao.findByNationalCode(nationalCode).orElseThrow(() -> new MemberException(nationalCode, BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND + "::" + nationalCode, ""));
         return mapper.toDto(member);
     }
 
@@ -108,7 +105,7 @@ public class MemberServiceImpl implements MemberService {
         //بررسی وجود شناسه و جستجو
         Member member = memberDao.findById(memberDto.getId()).orElseThrow(() -> new MemberException(memberDto.getId().toString(), BUSINESS_EXCEPTION_ID_NOT_FOUND + "::" + memberDto.getId(), ""));
         //ویرایش
-        mapper.updateEntity(memberDto,member);
+        mapper.updateEntity(memberDto, member);
         memberDao.update(member);
         return memberDto;
     }

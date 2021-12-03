@@ -4,10 +4,8 @@ import com.motaharinia.crud.modules.member.business.service.MemberService;
 import com.motaharinia.crud.utility.custom.customdto.ClientResponseDto;
 
 import javax.validation.Valid;
-import javax.validation.Validator;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.net.URISyntaxException;
 import java.util.List;
 
 @Path("/api/v1.0/member")
@@ -26,7 +24,7 @@ public class MemberController {
     }
 
     @POST
-    public ClientResponseDto<MemberDto> create(@Valid MemberDto dto) throws URISyntaxException {
+    public ClientResponseDto<MemberDto> create(@Valid MemberDto dto) {
         return new ClientResponseDto<>(memberService.create(dto), FORM_SUBMIT_SUCCESS);
     }
 

@@ -1,15 +1,15 @@
 package com.motaharinia.crud.config.log.rest;
 
-import com.motaharinia.crud.config.mvc.MessageService;
-import com.motaharinia.crud.utility.custom.customdto.ClientResponseDto;
 import com.motaharinia.crud.utility.custom.customdto.exception.ExceptionDto;
 import com.motaharinia.crud.utility.custom.customexception.business.BusinessException;
 import com.motaharinia.crud.utility.tools.exception.ExceptionTools;
+import com.motaharinia.crud.utility.tools.string.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.util.List;
 
 /**
  * @author eng.motahari@gmail.com<br>
@@ -19,17 +19,19 @@ public class RestBusinessExceptionTranslator implements ExceptionMapper<Business
     @Context
     protected HttpServletRequest httpServletRequest;
 
+    private final ExceptionDto exceptionDto;
     private final MessageService messageService;
 
-    public RestBusinessExceptionTranslator(MessageService messageService) {
+    public RestBusinessExceptionTranslator(ExceptionDto exceptionDto, MessageService messageService) {
+        this.exceptionDto = exceptionDto;
         this.messageService = messageService;
     }
 
     @Override
     public Response toResponse(BusinessException exception) {
-        ExceptionDto exceptionDto = ExceptionTools.translate(messageService, exception);
-        ExceptionTools.fillAdditionalData(exceptionDto, httpServletRequest, "dropwizard-crud", 8080, "username", 0L);
-        return Response.status(Response.Status.BAD_REQUEST).entity(new ClientResponseDto<>(exceptionDto, exceptionDto.getMessage())).build();
+        exceptionDto.setAppUserId(0L);
+        exceptionDto.setAppUsername("username");
+        return Response.status(Response.Status.BAD_REQUEST).entity(ExceptionTools.translate(messageService, httpServletRequest, List.of("prod"), exceptionDto,exception)).build();
     }
 
 

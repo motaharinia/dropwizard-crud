@@ -2,19 +2,22 @@ package com.motaharinia.crud;
 
 import com.codahale.metrics.jdbi3.InstrumentedSqlLogger;
 import com.miao.easyi18n.support.ResourceBundleMessageSource;
-import com.motaharinia.crud.config.log.rest.RestBusinessExceptionTranslator;
-import com.motaharinia.crud.config.log.rest.RestConstraintViolationExceptionTranslator;
+import com.motaharinia.crud.config.log.rest.*;
 import com.motaharinia.crud.config.mvc.MessageServiceImpl;
 import com.motaharinia.crud.modules.member.business.service.MemberService;
 import com.motaharinia.crud.modules.member.business.service.MemberServiceImpl;
 import com.motaharinia.crud.modules.member.persistence.MemberDao;
 import com.motaharinia.crud.modules.member.presentation.MemberController;
+import com.motaharinia.crud.utility.custom.customdto.exception.ExceptionDto;
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.jdbi3.bundles.JdbiExceptionsBundle;
+import io.dropwizard.jetty.ConnectorFactory;
+import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.server.AbstractServerFactory;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -26,6 +29,10 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 //https://howtodoinjava.com/dropwizard/tutorial-and-hello-world-example/
 //https://medium.com/swlh/how-to-design-restful-web-services-with-dropwizard-d5681a127cba
 //https://readthedocs.org/projects/dropwizard/downloads/pdf/latest/
+
+//---------- server types in yml
+//default (separate ports for application and admin connectors)
+//simple (both connectors on the same port).
 
 //---------- pom maven:
 //https://github.com/soabase/soabase/blob/master/pom.xml
@@ -64,7 +71,6 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 /**
  * Hello world!
- *
  */
 
 @Slf4j
@@ -78,6 +84,7 @@ public class CrudApplication extends Application<CrudConfiguration> {
             public DataSourceFactory getDataSourceFactory(CrudConfiguration configuration) {
                 return configuration.getDataSourceFactory();
             }
+
             @Override
             public String getMigrationsFileName() {
                 return "liquibase.xml";
@@ -94,17 +101,16 @@ public class CrudApplication extends Application<CrudConfiguration> {
     }
 
     @Override
-    public void run(CrudConfiguration configuration, Environment environment) throws Exception {
-        log.info("--------------- {}", configuration.getDefaultName());
-        log.info("--------------- {}", configuration.getTemplate());
+    public void run(CrudConfiguration configuration, Environment environment) {
+
 
         log.info("Registering REST resources");
 
         //wrapper ایجاد سازنده و
         final JdbiFactory factory = new JdbiFactory();
         final Jdbi jdbi = factory
-                        .build(environment, configuration.getDataSourceFactory(), "mysql")
-                        .installPlugin(new SqlObjectPlugin());
+                .build(environment, configuration.getDataSourceFactory(), "mysql")
+                .installPlugin(new SqlObjectPlugin());
 //                        .setSqlLogger(new Slf4JSqlLogger());
         jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
 //        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
@@ -112,17 +118,30 @@ public class CrudApplication extends Application<CrudConfiguration> {
 
         //سرویس ترجمه
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.addBasenames("lang/businessexception", "lang/comboitem", "lang/customvalidation", "lang/exception", "lang/notification", "lang/usermessages");
+        messageSource.addBasenames("lang/businessexception", "lang/comboitem", "lang/customvalidation", "lang/exception", "lang/notification", "lang/usermessage");
+        messageSource.setCacheSeconds(5);
         messageSource.setDefaultEncoding("UTF-8");
         environment.jersey().register(messageSource);
 
-//        //تنظیم مدیریت یکپارچه خطاها
+
         ServerFactory serverFactory = configuration.getServerFactory();
-        if (serverFactory instanceof AbstractServerFactory) {
-            ((AbstractServerFactory) serverFactory).setRegisterDefaultExceptionMappers(false);
+        //ست کردن پورت در کلاس تنظیمات
+        int appPort = 0;
+        for (ConnectorFactory connector : ((DefaultServerFactory) serverFactory).getApplicationConnectors()) {
+            if (connector.getClass().isAssignableFrom(HttpConnectorFactory.class)) {
+                appPort = ((HttpConnectorFactory) connector).getPort();
+                break;
+            }
         }
-        environment.jersey().register(new RestBusinessExceptionTranslator(new MessageServiceImpl(messageSource)));
-        environment.jersey().register(new RestConstraintViolationExceptionTranslator(new MessageServiceImpl(messageSource)));
+        ExceptionDto exceptionDto = new ExceptionDto(configuration.getAppProfile(),configuration.getAppName(),String.valueOf(appPort));
+        log.info("\n================================\nApp-Profile:{}, App-Name:{}, App-Port:{}\n================================ ", exceptionDto.getAppProfile(), exceptionDto.getAppName(), exceptionDto.getAppPort());
+        //تنظیم مدیریت یکپارچه خطاها
+        ((AbstractServerFactory) serverFactory).setRegisterDefaultExceptionMappers(false);
+        environment.jersey().register(new RestBusinessExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
+        environment.jersey().register(new RestConstraintViolationExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
+        environment.jersey().register(new RestExternalCallExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
+        environment.jersey().register(new RestRateLimitExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
+        environment.jersey().register(new RestGeneralExceptionTranslator(exceptionDto));
 
         //تعریف کلاسهای مدیریت دسترسی داده
         final MemberDao memberDao = jdbi.onDemand(MemberDao.class);
@@ -136,6 +155,6 @@ public class CrudApplication extends Application<CrudConfiguration> {
 
     public static void main(String[] args) throws Exception {
         new CrudApplication().run(args);
-//        new CrudApplication().run("server", "crud.yml");
+//        new CrudApplication().run("server", "crud-dev.yml");
     }
 }

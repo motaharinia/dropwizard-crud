@@ -1,6 +1,5 @@
 package com.motaharinia.crud.utility.tools.string;
 
-import com.motaharinia.crud.config.mvc.MessageService;
 import com.motaharinia.crud.utility.custom.customexception.utility.UtilityException;
 import com.motaharinia.crud.utility.custom.customexception.utility.UtilityExceptionKeyEnum;
 import org.apache.commons.lang3.ObjectUtils;
@@ -24,7 +23,11 @@ import java.util.Random;
  */
 public interface StringTools {
 
-
+    String CHARACTERS_LOWER = "abcdefghigklmnopqrstuvwxyz";
+    String CHARACTERS_UPPER = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
+    String NUMBERS = "1234567890";
+    String PUNCTUATIONS = "_-$#@%^*&=+";
+    String CHARACTERS_PERSIAN = "ابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی";
     Random RANDOM = new Random();
 
     /**
@@ -134,48 +137,10 @@ public interface StringTools {
         if (ObjectUtils.isEmpty(withLeadingZero)) {
             throw new UtilityException(StringTools.class, UtilityExceptionKeyEnum.METHOD_PARAMETER_IS_NULL_OR_EMPTY, "withLeadingZero");
         }
-        String characterLower = "abcdefghigklmnopqrstuvwxyz";
-        String characterUpper = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
-        String number = "1234567890";
-        String punc = "_-$#@%^*&=+";
-        String characterPersian = "ابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی";
-        String characters = "";
 
-        switch (randomGenerationTypeEnum) {
-            case LATIN_CHARACTERS:
-                characters = characterLower + characterUpper;
-                break;
-            case LATIN_LOWER_CHARACTERS:
-                characters = characterLower;
-                break;
-            case LATIN_UPPER_CHARACTERS:
-                characters = characterUpper;
-                break;
-            case NUMBER:
-                characters = number;
-                break;
-            case LATIN_CHARACTERS_NUMBERS:
-                characters = characterLower + characterUpper + number;
-                break;
-            case PUNCTUATIONS:
-                characters = punc;
-                break;
-            case LATIN_CHARACTERS_NUMBERS_PUNCTUATIONS:
-                characters = characterLower + characterUpper + number + punc;
-                break;
-            case LATIN_CHARACTERS_NUMBERS_UNDERLINE:
-                characters = characterLower + characterUpper + number + "_";
-                break;
-            case NUMBERS_UNDERLINE:
-                characters = number + "_";
-                break;
-            case PERSIAN_CHARACTERS_SPACE:
-                characters = characterPersian + " ";
-                break;
-            case PERSIAN_CHARACTERS_SPACE_NUMBERS:
-                characters = characterPersian + number + " ";
-                break;
-        }
+        String characters = getCharacters(randomGenerationTypeEnum);
+
+
         int charactersLength = characters.length();
         int randomNum;
         char randomChar;
@@ -184,14 +149,14 @@ public interface StringTools {
             randomNum = RANDOM.nextInt(charactersLength);
             randomChar = characters.charAt(randomNum);
             if ((i == 0) && (!withLeadingZero)) {
-                while (((int) randomChar == 48)) {
+                while (( randomChar == 48)) {
                     randomNum = RANDOM.nextInt((charactersLength - 1));
                     randomChar = characters.charAt(randomNum);
                 }
             }
             //در حالت رشته ای در ابتدا یا انتها حرف فاصله نباشد
             if ((i == 0) || (i == length - 1)) {
-                while (((int) randomChar == 32)) {
+                while (( randomChar == 32)) {
                     randomNum = RANDOM.nextInt((charactersLength - 1));
                     randomChar = characters.charAt(randomNum);
                 }
@@ -201,6 +166,35 @@ public interface StringTools {
         return stringBuilder.toString();
     }
 
+    static String getCharacters(@NotNull RandomGenerationTypeEnum randomGenerationTypeEnum){
+        switch (randomGenerationTypeEnum) {
+            case LATIN_CHARACTERS:
+                return CHARACTERS_LOWER + CHARACTERS_UPPER;
+            case LATIN_LOWER_CHARACTERS:
+                return CHARACTERS_LOWER;
+            case LATIN_UPPER_CHARACTERS:
+                return CHARACTERS_UPPER;
+            case NUMBER:
+                return NUMBERS;
+            case LATIN_CHARACTERS_NUMBERS:
+                return CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS;
+            case PUNCTUATIONS:
+                return PUNCTUATIONS;
+            case LATIN_CHARACTERS_NUMBERS_PUNCTUATIONS:
+                return CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS + PUNCTUATIONS;
+            case LATIN_CHARACTERS_NUMBERS_UNDERLINE:
+                return  CHARACTERS_LOWER + CHARACTERS_UPPER + NUMBERS + "_";
+            case NUMBERS_UNDERLINE:
+                return NUMBERS + "_";
+            case PERSIAN_CHARACTERS_SPACE:
+                return CHARACTERS_PERSIAN + " ";
+            case PERSIAN_CHARACTERS_SPACE_NUMBERS:
+                return CHARACTERS_PERSIAN + NUMBERS + " ";
+            default:
+                return "";
+        }
+
+    }
 
     /**
      * متد ترجمه متن مورد نظر
@@ -208,14 +202,14 @@ public interface StringTools {
      * @param customMessage کلید پیام برای ترجمه
      * @return خروجی: پیام ترجمه شده
      */
-    static String translateCustomMessage(MessageService messageService, String customMessage) {
+    static String translateCustomMessage(MessageService messageService, String customMessage,Locale locale) {
         if (!ObjectUtils.isEmpty(messageService) && !ObjectUtils.isEmpty(customMessage)) {
             if (customMessage.split("::").length > 1) {
                 String[] customMessageArray = customMessage.split("::");
                 String[] customMessageParametersArray = customMessageArray[1].split(",", -1);
-                customMessage = messageService.getMessage(customMessageArray[0], Arrays.asList(customMessageParametersArray.clone()), Locale.getDefault());
+                customMessage = messageService.getMessage(customMessageArray[0], Arrays.asList(customMessageParametersArray.clone()),locale);
             } else {
-                customMessage = messageService.getMessage(customMessage, new ArrayList<>(), Locale.getDefault());
+                customMessage = messageService.getMessage(customMessage, new ArrayList<>(),locale);
             }
         }
         return customMessage;

@@ -1,15 +1,17 @@
 package com.motaharinia.crud.utility.tools.exception;
 
 
-import com.motaharinia.crud.config.mvc.MessageService;
+import com.motaharinia.crud.utility.custom.customdto.ClientResponseDto;
 import com.motaharinia.crud.utility.custom.customdto.exception.ExceptionDto;
 import com.motaharinia.crud.utility.custom.customdto.exception.ExceptionMessageDto;
 import com.motaharinia.crud.utility.custom.customexception.ExceptionTypeEnum;
 import com.motaharinia.crud.utility.custom.customexception.business.BusinessException;
 import com.motaharinia.crud.utility.custom.customexception.externalcall.ExternalCallException;
 import com.motaharinia.crud.utility.custom.customexception.ratelimit.RateLimitException;
+import com.motaharinia.crud.utility.tools.string.MessageService;
 import com.motaharinia.crud.utility.tools.string.StringTools;
 import org.apache.commons.lang3.ObjectUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
@@ -30,18 +32,21 @@ public interface ExceptionTools {
 
 
     /**
-     * متد ترجمه خطا از خطای بیزینس
+     * متد ترجمه خطا از خطای بیزینس و ایجاد مدل فرانت
      *
-     * @param messageService    سرویس ترجمه
-     * @param businessException خطای بیزینس
-     * @return خروجی: مدل خطا
+     * @param messageService     سرویس ترجمه
+     * @param httpServletRequest شیی درخواست وب
+     * @param maskedProfileList  لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto       مدل خطا
+     * @param businessException  خطای بیزینس
+     * @return خروجی: مدل فرانت
      */
-    static ExceptionDto translate(MessageService messageService, BusinessException businessException) {
-        ExceptionDto exceptionDto = new ExceptionDto();
+    @NotNull
+    static ClientResponseDto<Void> translate(@NotNull MessageService messageService, HttpServletRequest httpServletRequest, @NotNull List<String> maskedProfileList, @NotNull ExceptionDto exceptionDto, @NotNull BusinessException businessException) {
         List<ExceptionMessageDto> messageDtoList = new ArrayList<>();
         String translatedMessage = businessException.getMessage();
         if (!ObjectUtils.isEmpty(translatedMessage) && translatedMessage.toUpperCase(Locale.getDefault()).startsWith("BUSINESS_EXCEPTION")) {
-            translatedMessage = StringTools.translateCustomMessage(messageService, businessException.getMessage());
+            translatedMessage = StringTools.translateCustomMessage(messageService, businessException.getMessage(), httpServletRequest.getLocale());
         }
         messageDtoList.add(new ExceptionMessageDto(translatedMessage, getStackTraceString(businessException), getStackTraceLineString(businessException), ""));
         exceptionDto.setType(ExceptionTypeEnum.BUSINESS_EXCEPTION);
@@ -52,18 +57,21 @@ public interface ExceptionTools {
         }
         exceptionDto.setMessageDtoList(messageDtoList);
         exceptionDto.setDescription(businessException.getDescription());
-        return exceptionDto;
+        return fillAdditionalData(httpServletRequest, maskedProfileList, exceptionDto);
     }
 
     /**
-     * متد ترجمه خطا از خطای اعتبارسنجی پارامترهای متد
+     * متد ترجمه خطا از خطای اعتبارسنجی پارامترهای متد و ایجاد مدل فرانت
      *
      * @param messageService               سرویس ترجمه
+     * @param httpServletRequest           شیی درخواست وب
+     * @param maskedProfileList            لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto                 مدل خطا
      * @param constraintViolationException خطای اعتبارسنجی پارامتر متد
-     * @return خروجی: مدل خطا
+     * @return خروجی: مدل فرانت
      */
-    static ExceptionDto translate(MessageService messageService, ConstraintViolationException constraintViolationException) {
-        ExceptionDto exceptionDto = new ExceptionDto();
+    @NotNull
+    static ClientResponseDto<Void> translate(@NotNull MessageService messageService, HttpServletRequest httpServletRequest, @NotNull List<String> maskedProfileList, @NotNull ExceptionDto exceptionDto, @NotNull ConstraintViolationException constraintViolationException) {
         Set<ConstraintViolation<?>> constraintViolationSet = constraintViolationException.getConstraintViolations();
         List<ExceptionMessageDto> messageDtoList = new ArrayList<>();
         exceptionDto.setType(ExceptionTypeEnum.VALIDATION_EXCEPTION);
@@ -76,7 +84,7 @@ public interface ExceptionTools {
             }
             translatedMessage = violation.getMessage();
             if (!ObjectUtils.isEmpty(translatedMessage) && translatedMessage.toUpperCase(Locale.getDefault()).startsWith("CUSTOM_VALIDATION")) {
-                translatedMessage = StringTools.translateCustomMessage(messageService, violation.getMessage());
+                translatedMessage = StringTools.translateCustomMessage(messageService, violation.getMessage(), httpServletRequest.getLocale());
             }
             messageDtoList.add(new ExceptionMessageDto(translatedMessage, getStackTraceString(constraintViolationException), getStackTraceLineString(constraintViolationException), fieldName));
         }
@@ -85,18 +93,21 @@ public interface ExceptionTools {
         }
         exceptionDto.setMessageDtoList(messageDtoList);
         exceptionDto.setDescription("");
-        return exceptionDto;
+        return fillAdditionalData(httpServletRequest, maskedProfileList, exceptionDto);
     }
 
     /**
-     * متد ترجمه خطا از خطای فراخوانی سرویسهای بیرونی
+     * متد ترجمه خطا از خطای فراخوانی سرویسهای بیرونی و ایجاد مدل فرانت
      *
      * @param messageService        سرویس ترجمه
+     * @param httpServletRequest    شیی درخواست وب
+     * @param maskedProfileList     لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto          مدل خطا
      * @param externalCallException خطای فراخوانی سرویسهای بیرونی
-     * @return خروجی: مدل خطا
+     * @return خروجی: مدل فرانت
      */
-    static ExceptionDto translate(MessageService messageService, ExternalCallException externalCallException) {
-        ExceptionDto exceptionDto = new ExceptionDto();
+    @NotNull
+    static ClientResponseDto<Void> translate(@NotNull MessageService messageService, HttpServletRequest httpServletRequest, @NotNull List<String> maskedProfileList, @NotNull ExceptionDto exceptionDto, @NotNull ExternalCallException externalCallException) {
         List<ExceptionMessageDto> messageDtoList = new ArrayList<>();
         String translatedMessage = "ExternalCallException for " + "[" + externalCallException.getRequestMethod().toString() + "]: " + externalCallException.getRequestUrl() + " message:" + externalCallException.getResponseException().getMessage();
         messageDtoList.add(new ExceptionMessageDto(translatedMessage, getStackTraceString(externalCallException), getStackTraceLineString(externalCallException), ""));
@@ -105,30 +116,34 @@ public interface ExceptionTools {
         exceptionDto.setDataId(externalCallException.getRequestUrl());
         if (!messageDtoList.isEmpty()) {
             if (externalCallException.getResponseCustomError().equalsIgnoreCase("I/O error. Connection refused: connect")) {
-                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.IO::" + externalCallException.getRequestCode()));
+                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.IO::" + externalCallException.getRequestCode(), httpServletRequest.getLocale()));
             } else if (externalCallException.getResponseCode().isEmpty()) {
-                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.UNKNOWN::" + externalCallException.getRequestCode()));
+                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.UNKNOWN::" + externalCallException.getRequestCode(), httpServletRequest.getLocale()));
             } else {
-                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.CODE::" + externalCallException.getResponseCode() + "," + externalCallException.getRequestCode()));
+                exceptionDto.setMessage(StringTools.translateCustomMessage(messageService, "EXTERNAL_CALL_EXCEPTION.CODE::" + externalCallException.getResponseCode() + "," + externalCallException.getRequestCode(), httpServletRequest.getLocale()));
                 exceptionDto.setExternalMessage(externalCallException.getResponseCustomError());
             }
         }
         exceptionDto.setMessageDtoList(messageDtoList);
         exceptionDto.setDescription(externalCallException.getRequestMethod().toString());
-        return exceptionDto;
+        return fillAdditionalData(httpServletRequest, maskedProfileList, exceptionDto);
     }
 
+
     /**
-     * متد سازنده مدل خطا از خطای محدودیت بازدید
+     * متد سازنده مدل خطا از خطای محدودیت بازدید و ایجاد مدل فرانت
      *
-     * @param messageService     شیی ترجمه
+     * @param messageService     سرویس ترجمه
+     * @param httpServletRequest شیی درخواست وب
+     * @param maskedProfileList  لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto       مدل خطا
      * @param rateLimitException خطای محدودیت بازدید
-     * @return خروجی: مدل خطا
+     * @return خروجی: مدل فرانت
      */
-    static ExceptionDto translate(MessageService messageService, RateLimitException rateLimitException) {
-        ExceptionDto exceptionDto = new ExceptionDto();
+    @NotNull
+    static ClientResponseDto<Void> translate(@NotNull MessageService messageService, HttpServletRequest httpServletRequest, @NotNull List<String> maskedProfileList, @NotNull ExceptionDto exceptionDto, @NotNull RateLimitException rateLimitException) {
         List<ExceptionMessageDto> messageDtoList = new ArrayList<>();
-        messageDtoList.add(new ExceptionMessageDto(StringTools.translateCustomMessage(messageService, rateLimitException.getMessage()), getStackTraceString(rateLimitException), getStackTraceLineString(rateLimitException), ""));
+        messageDtoList.add(new ExceptionMessageDto(StringTools.translateCustomMessage(messageService, rateLimitException.getMessage(), httpServletRequest.getLocale()), getStackTraceString(rateLimitException), getStackTraceLineString(rateLimitException), ""));
         exceptionDto.setType(ExceptionTypeEnum.RATE_LIMIT_EXCEPTION);
         exceptionDto.setExceptionClassName("");
         exceptionDto.setDataId("");
@@ -137,18 +152,20 @@ public interface ExceptionTools {
         }
         exceptionDto.setMessageDtoList(messageDtoList);
         exceptionDto.setDescription("");
-        return exceptionDto;
+        return fillAdditionalData(httpServletRequest, maskedProfileList, exceptionDto);
     }
 
     /**
-     * متد سازنده مدل خطا از خطای عمومی نامشخص
+     * متد سازنده مدل خطا از خطای عمومی و ایجاد مدل فرانت
      *
-     * @param messageService   شیی ترجمه
-     * @param generalException خطای عمومی نامشخص
-     * @return خروجی: مدل خطا
+     * @param httpServletRequest شیی درخواست وب
+     * @param maskedProfileList  لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto       مدل خطا
+     * @param generalException   خطای عمومی
+     * @return خروجی: مدل فرانت
      */
-    static ExceptionDto translate(MessageService messageService, Exception generalException) {
-        ExceptionDto exceptionDto = new ExceptionDto();
+    @NotNull
+    static ClientResponseDto<Void> translate(HttpServletRequest httpServletRequest, @NotNull List<String> maskedProfileList, @NotNull ExceptionDto exceptionDto, @NotNull Exception generalException) {
         List<ExceptionMessageDto> messageDtoList = new ArrayList<>();
         messageDtoList.add(new ExceptionMessageDto(generalException.getMessage(), getStackTraceString(generalException), getStackTraceLineString(generalException), ""));
         exceptionDto.setType(ExceptionTypeEnum.GENERAL_EXCEPTION);
@@ -159,45 +176,42 @@ public interface ExceptionTools {
         }
         exceptionDto.setMessageDtoList(messageDtoList);
         exceptionDto.setDescription("");
-        return exceptionDto;
+        return fillAdditionalData(httpServletRequest, maskedProfileList, exceptionDto);
     }
 
 
     /**
-     * متد سازنده مدل اولیه خطا
+     * متد تکمیل اطلاعات مدل خطا و آماده سازی مدل فرانت
      *
-     * @param exceptionDto       مدل خطا
      * @param httpServletRequest شیی درخواست وب
-     * @param appName            نام سرویس
-     * @param appPort            پورت سرویس
-     * @param username           کلمه کاربری کاربر لاگین شده
-     * @param userId             شناسه کاربر لاگین شده
+     * @param maskedProfileList  لیست پروفایلهایی که شرح فنی در آنها مخفی میشود
+     * @param exceptionDto       مدل خطا
+     * @return خروجی: مدل فرانت
      */
-    static void fillAdditionalData(ExceptionDto exceptionDto, HttpServletRequest httpServletRequest, String appName, int appPort, String username, Long userId) {
-        exceptionDto.setAppName(appName);
-        exceptionDto.setAppPort(String.valueOf(appPort));
-        exceptionDto.setUrl(getRequestUrl(httpServletRequest));
-        exceptionDto.setIpAddress(getRequestIpAddress(httpServletRequest));
-        exceptionDto.setUsername(username);
-        exceptionDto.setUserId(userId);
+    static ClientResponseDto<Void> fillAdditionalData(HttpServletRequest httpServletRequest, List<String> maskedProfileList, ExceptionDto exceptionDto) {
+        exceptionDto.setAppUrlAddress(getRequestUrl(httpServletRequest));
+        exceptionDto.setAppIpAddress(getRequestIpAddress(httpServletRequest));
 
-        //        //در صورتی که در محیط پروداکشن هستیم اطلاعات زیادی به فرانت ارسال نشود
-//        if (environment.getActiveProfiles().length > 0 && Arrays.stream(environment.getActiveProfiles()).anyMatch("prod"::equals)) {
-//            clientResponseDto.getException().setExceptionClassName("here is production");
-//            clientResponseDto.getException().setAppPort("here is production");
-//            clientResponseDto.getException().setDescription("here is production");
-//            clientResponseDto.getException().setDataId("here is production");
-//            clientResponseDto.getException().getMessageDtoList().stream().forEach(item -> {
-//                item.setStackTrace("here is production");
-//                item.setStackTraceLine("here is production");
-//                item.setMessage("here is production");
-//            });
-//
-//            if ( clientResponseDto.getException().getType().equals(ExceptionTypeEnum.GENERAL_EXCEPTION)) {
-//                clientResponseDto.setMessage("here is production");
-//                clientResponseDto.getException().setMessage("here is production");
-//            }
-//        }
+        ClientResponseDto<Void> clientResponseDto = new ClientResponseDto<>(exceptionDto, exceptionDto.getMessage());
+        //مخفی نمودن شرح فنی در پروفایلهای خاص مانند پروداکشن
+        if (ObjectUtils.isNotEmpty(maskedProfileList) && maskedProfileList.contains(exceptionDto.getAppProfile())) {
+            String mask = "here is production";
+            clientResponseDto.getException().setExceptionClassName(mask);
+            clientResponseDto.getException().setAppPort(mask);
+            clientResponseDto.getException().setDescription(mask);
+            clientResponseDto.getException().setDataId(mask);
+            clientResponseDto.getException().getMessageDtoList().forEach(item -> {
+                item.setStackTrace(mask);
+                item.setStackTraceLine(mask);
+                item.setMessage(mask);
+            });
+
+            if (clientResponseDto.getException().getType().equals(ExceptionTypeEnum.GENERAL_EXCEPTION)) {
+                clientResponseDto.setMessage(mask);
+                clientResponseDto.getException().setMessage(mask);
+            }
+        }
+        return clientResponseDto;
     }
 
     /**

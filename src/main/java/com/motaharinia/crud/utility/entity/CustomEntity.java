@@ -2,6 +2,7 @@
 package com.motaharinia.crud.utility.entity;
 
 import lombok.Data;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 

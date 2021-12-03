@@ -24,14 +24,6 @@ public class ExceptionDto implements Serializable {
      */
     private String logKey = UUID.randomUUID().toString();
     /**
-     * نام سامانه
-     */
-    private String appName;
-    /**
-     * پورت سامانه
-     */
-    private String appPort;
-    /**
      * نوع خطا
      */
     private ExceptionTypeEnum type;
@@ -64,20 +56,37 @@ public class ExceptionDto implements Serializable {
      */
     private String dateOfException = String.valueOf(Instant.now().toEpochMilli());
     /**
-     * نشانی وب در زمان بروز خطا
+     * پروفایل سامانه
      */
-    private String url;
+    private String appProfile;
     /**
-     * نشانی آی پی کاربر در زمان بروز خطا
+     * نام سامانه
      */
-    private String ipAddress;
+    private String appName;
     /**
-     * کلمه کاربری کاربر (در صورتی که لاگین باشد) در زمان بروز خطا
+     * پورت سامانه
      */
-    private String username;
+    private String appPort;
     /**
      * شناسه کاربر (در صورتی که لاگین باشد) در زمان بروز خطا
      */
-    private Long userId;
+    private Long appUserId;
+    /**
+     * کلمه کاربری کاربر (در صورتی که لاگین باشد) در زمان بروز خطا
+     */
+    private String appUsername;
+    /**
+     * نشانی وب در زمان بروز خطا
+     */
+    private String appUrlAddress;
+    /**
+     * نشانی آی پی کاربر در زمان بروز خطا
+     */
+    private String appIpAddress;
 
+    public ExceptionDto(String appProfile, String appName, String appPort) {
+        this.appProfile = appProfile;
+        this.appName = appName;
+        this.appPort = appPort;
+    }
 }

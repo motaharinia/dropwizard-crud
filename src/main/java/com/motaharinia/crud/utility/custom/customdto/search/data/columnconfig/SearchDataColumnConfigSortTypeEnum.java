@@ -12,7 +12,7 @@ public enum SearchDataColumnConfigSortTypeEnum {
     /**
      *مرتب سازی عددی
      */
-    NUMBER("NUMBER")
+    NUMBER("NUMBERS")
     ;
 
     //نحوه مرتب سازی مطالب

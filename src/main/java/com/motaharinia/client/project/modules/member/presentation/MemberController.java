@@ -2,6 +2,7 @@ package com.motaharinia.client.project.modules.member.presentation;
 
 import com.motaharinia.client.project.modules.member.business.service.MemberService;
 import com.motaharinia.client.project.utility.custom.customdto.ClientResponseDto;
+import io.swagger.annotations.Api;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -9,7 +10,9 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 @Path("/api/v1.0/member")
+@Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Api(description = "Tryout Swagger", protocols = "http")
 public class MemberController {
 
     private final MemberService memberService;

@@ -1,21 +1,31 @@
 package com.motaharinia;
 
 import com.codahale.metrics.jdbi3.InstrumentedSqlLogger;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.miao.easyi18n.support.ResourceBundleMessageSource;
 import com.motaharinia.client.project.config.app.ProjectConfiguration;
 import com.motaharinia.client.project.config.grpc.GrpcServer;
 import com.motaharinia.client.project.config.log.rest.*;
+import com.motaharinia.client.project.config.swagger.TryoutSwaggerApi;
+import com.motaharinia.client.project.config.swagger.TryoutSwaggerApiImpl;
 import com.motaharinia.client.project.modules.member.presentation.MemberController;
 import com.motaharinia.client.project.config.mvc.MessageServiceImpl;
 import com.motaharinia.client.project.modules.member.business.service.MemberService;
 import com.motaharinia.client.project.modules.member.business.service.MemberServiceImpl;
 import com.motaharinia.client.project.modules.member.persistence.MemberDao;
 import com.motaharinia.client.project.utility.custom.customdto.exception.ExceptionDto;
+import com.motaharinia.client.project.utility.tools.string.MessageService;
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.jdbi3.bundles.JdbiExceptionsBundle;
 import io.dropwizard.jersey.protobuf.ProtobufBundle;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.migrations.MigrationsBundle;
@@ -24,11 +34,17 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
+import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 //https://howtodoinjava.com/dropwizard/tutorial-and-hello-world-example/
@@ -55,9 +71,10 @@ import java.io.IOException;
 //https://www.programcreek.com/java-api-examples/?api=org.jdbi.v3.core.Jdbi
 //https://www.tabnine.com/code/java/methods/io.dropwizard.jdbi.logging.LogbackLog/%3Cinit%3E
 
-//---------- jikaricp:
+//---------- hikaricp:
 //https://github.com/mtakaki/dropwizard-hikaricp
 //https://nickb.dev/blog/the-difficulty-of-performance-evaluation-of-hikaricp-in-dropwizard
+//https://gist.github.com/maji-KY/646f202cacac855cd8da
 
 //---------- liquibase:
 //https://junctionbox.ca/2013/05/10/dropwizard-liquibase-migrations.html
@@ -90,6 +107,15 @@ import java.io.IOException;
 //https://github.com/grpc/grpc-java/blob/master/examples/src/main/java/io/grpc/examples/routeguide/RouteGuideServer.java
 //https://www.baeldung.com/grpc-introduction
 
+
+//---------- guice (injection):
+//https://github.com/google/guice
+//https://dzone.com/articles/dropwizard-and-guice
+//https://javaee.github.io/hk2/guice-bridge.html
+
+//---------- swagger3 (openapi):
+//https://github.com/lxucs/Tryout-Swagger
+
 /**
  * Hello world!
  */
@@ -97,9 +123,35 @@ import java.io.IOException;
 @Slf4j
 public class CrudApplication extends Application<ProjectConfiguration> {
 
+//    private GuiceBundle<ProjectConfiguration> guiceBundle;
+
+
     @Override
     public void initialize(Bootstrap<ProjectConfiguration> bootstrap) {
-        //liquibase
+        System.out.println("---------->>>>>>>>>> CrudApplication.initialize");
+
+        //guice (injection)
+//        System.out.println("getClass().getPackage().getName(): " + getClass().getPackage().getName());
+//        guiceBundle = GuiceBundle.<ProjectConfiguration>newBuilder()
+////                .addModule(new ServerModule())
+//                .setConfigClass(ProjectConfiguration.class)
+//                .enableAutoConfig("com.motaharinia")
+//                .build();
+//        bootstrap.addBundle(guiceBundle);
+
+        //تنظیمات OpenApi Ui
+        bootstrap.addBundle(new SwaggerBundle<>() {
+            @Override
+            protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ProjectConfiguration configuration) {
+                return configuration.swaggerBundleConfiguration;
+            }
+        });
+//        bootstrap.addBundle(new AssetsBundle("/resoursePath", "/uriPath", "index.html"));
+
+
+
+
+        //تنظیمات liquibase
         bootstrap.addBundle(new MigrationsBundle<>() {
             @Override
             public DataSourceFactory getDataSourceFactory(ProjectConfiguration configuration) {
@@ -112,41 +164,85 @@ public class CrudApplication extends Application<ProjectConfiguration> {
             }
         });
 
+        //تنظیمات اکسپشن دیتابیس
         // By adding the JdbiExceptionsBundle to your application, Dropwizard will automatically unwrap
         // ant thrown SQLException or DBIException instances. This is critical for debugging, since
         // otherwise only the common wrapper exception’s stack trace is logged.
         bootstrap.addBundle(new JdbiExceptionsBundle());
 
+        //تنظیمات GRPC
+        bootstrap.addBundle(new ProtobufBundle());
+
 //        bootstrap.addBundle(new CorsBundle());
 //        bootstrap.addBundle(new RateLimitBundle(new InMemoryRateLimiterFactory()));
+//        bootstrap.addBundle(new CustomizeSwaggerBundle());
+//        bootstrap.addBundle(new MultiPartBundle());
 
-        bootstrap.addBundle(new ProtobufBundle());
+        //تنظیمات پیش فرض جکسون
+//        bootstrap.setObjectMapper(new CustomObjectMapper());
+        bootstrap.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        bootstrap.getObjectMapper().setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        bootstrap.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        bootstrap.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     @Override
     public void run(ProjectConfiguration configuration, Environment environment) throws IOException, InterruptedException {
-
-
-        log.info("Registering REST resources");
-
-        //wrapper ایجاد سازنده و
-        final JdbiFactory factory = new JdbiFactory();
-        final Jdbi jdbi = factory
-                .build(environment, configuration.getDataSourceFactory(), "mysql")
-                .installPlugin(new SqlObjectPlugin());
-//                        .setSqlLogger(new Slf4JSqlLogger());
-        jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
-//        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
-
-
+        log.info("\n---------->>>>>>>>>> CrudApplication.run");
         //سرویس ترجمه
+        MessageService messageService = registerMessageSource(environment.jersey());
+        //تنظیم مدیریت یکپارچه خطاها
+        registerLog(environment.jersey(), configuration, messageService);
+        //تنظیمات OpenApi3 (swagger)
+        registerOpenApi(environment.jersey());
+        //تنظیم کلاسهای داده و ریسورس و grpc
+        registerServices(configuration,environment);
+    }
+
+    public static void main(String[] args) throws Exception {
+        new CrudApplication().run(args);
+//        new CrudApplication().run("server", "crud-dev.yml");
+    }
+
+
+    /**
+     * متد تنظیم کننده سرویس ترجمه
+     *
+     * @param jersey شیی محیط Jersey
+     * @return خروجی: سرویس ترجمه
+     */
+    private MessageService registerMessageSource(JerseyEnvironment jersey) {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.addBasenames("lang/businessexception", "lang/comboitem", "lang/customvalidation", "lang/exception", "lang/notification", "lang/usermessage");
         messageSource.setCacheSeconds(5);
         messageSource.setDefaultEncoding("UTF-8");
-        environment.jersey().register(messageSource);
+        jersey.register(messageSource);
+        return new MessageServiceImpl(messageSource);
+    }
 
 
+    /**
+     * متد تنظیم کننده OpenApi3 - Swagger
+     *
+     * @param jersey شیی محیط Jersey
+     */
+    private void registerOpenApi(JerseyEnvironment jersey) {
+        jersey.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(TryoutSwaggerApiImpl.class).to(TryoutSwaggerApi.class).in(Singleton.class);
+            }
+        });
+    }
+
+
+    /**
+     * متد تنظیم کننده لاگ خطاها
+     *
+     * @param jersey        شیی محیط Jersey
+     * @param configuration مدل تنظیمات
+     */
+    private void registerLog(JerseyEnvironment jersey, ProjectConfiguration configuration, MessageService messageService) {
         ServerFactory serverFactory = configuration.getServerFactory();
         //ست کردن پورت در کلاس تنظیمات
         int appPort = 0;
@@ -156,15 +252,34 @@ public class CrudApplication extends Application<ProjectConfiguration> {
                 break;
             }
         }
-        ExceptionDto exceptionDto = new ExceptionDto(configuration.getApp().getProfile(),configuration.getApp().getName(),String.valueOf(appPort));
+
+        ExceptionDto exceptionDto = new ExceptionDto(configuration.getApp().getProfile(), configuration.getApp().getName(), String.valueOf(appPort));
         log.info("\n================================\nApp-Profile:{}, App-Name:{}, App-Port:{}\n================================ ", exceptionDto.getAppProfile(), exceptionDto.getAppName(), exceptionDto.getAppPort());
-        //تنظیم مدیریت یکپارچه خطاها
         ((AbstractServerFactory) serverFactory).setRegisterDefaultExceptionMappers(false);
-        environment.jersey().register(new RestBusinessExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
-        environment.jersey().register(new RestConstraintViolationExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
-        environment.jersey().register(new RestExternalCallExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
-        environment.jersey().register(new RestRateLimitExceptionTranslator(exceptionDto,new MessageServiceImpl(messageSource)));
-        environment.jersey().register(new RestGeneralExceptionTranslator(exceptionDto));
+        jersey.register(new RestBusinessExceptionTranslator(exceptionDto, messageService));
+        jersey.register(new RestConstraintViolationExceptionTranslator(exceptionDto, messageService));
+        jersey.register(new RestExternalCallExceptionTranslator(exceptionDto, messageService));
+        jersey.register(new RestRateLimitExceptionTranslator(exceptionDto, messageService));
+        jersey.register(new RestGeneralExceptionTranslator(exceptionDto));
+    }
+
+
+    /**
+     * متد تنظیم کننده دیتابیس و سرویسها
+     *
+     * @param configuration مدل تنظیمات
+     * @param environment   شیی محیط برنامه
+     * @throws IOException خطا
+     */
+    private void registerServices(ProjectConfiguration configuration, Environment environment) throws IOException {
+        //تنظیمات دیتابیس
+        final JdbiFactory factory = new JdbiFactory();
+        final Jdbi jdbi = factory
+                .build(environment, configuration.getDataSourceFactory(), "mysql")
+                .installPlugin(new SqlObjectPlugin());
+//                        .setSqlLogger(new Slf4JSqlLogger());
+        jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
+//        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
 
         //تعریف کلاسهای مدیریت دسترسی داده
         final MemberDao memberDao = jdbi.onDemand(MemberDao.class);
@@ -176,14 +291,8 @@ public class CrudApplication extends Application<ProjectConfiguration> {
         environment.jersey().register(new MemberController(memberService));
 
         //تنظیم grpc
-        GrpcServer grpcServer=  new GrpcServer(configuration.getApp().getGrpcPort(),memberService);
+        GrpcServer grpcServer = new GrpcServer(configuration.getApp().getGrpcPort(), memberService);
         grpcServer.start();
 //        grpcServer.blockUntilShutdown();
-
-    }
-
-    public static void main(String[] args) throws Exception {
-        new CrudApplication().run(args);
-//        new CrudApplication().run("server", "crud-dev.yml");
     }
 }

@@ -66,6 +66,13 @@
             <version>${dropwizard.version}</version>
         </dependency>
 
+        <!--dropwizard assets (provides a simple way to serve static assets)-->
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-assets</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+
         <!--dropwizard test-->
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -73,6 +80,21 @@
             <version>${dropwizard.version}</version>
             <scope>test</scope>
         </dependency>
+
+
+
+
+        <!--dropwizard guice (injection)-->
+<!--        <dependency>-->
+<!--            <groupId>com.hubspot.dropwizard</groupId>-->
+<!--            <artifactId>dropwizard-guice</artifactId>-->
+<!--            <version>1.3.5.0</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.google.inject</groupId>-->
+<!--            <artifactId>guice</artifactId>-->
+<!--            <version>5.0.1</version>-->
+<!--        </dependency>-->
 
         <!--grpc-->
         <dependency>
@@ -111,9 +133,8 @@
             <artifactId>guava</artifactId>
             <version>30.1.1-jre</version>
         </dependency>
-
-
-        <dependency> <!-- necessary for Java 9+ -->
+        <!-- necessary for Java 9+ -->
+        <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>annotations-api</artifactId>
             <version>6.0.53</version>
@@ -121,13 +142,29 @@
         </dependency>
 
 
+        <!-- ==========Other==========-->
+        <!-- IO-Collection-Lang: Apache commons (https://mvnrepository.com/artifact/commons-io/commons-io) (https://mvnrepository.com/artifact/org.apache.commons/commons-lang3)-->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.10</version>
+        </dependency>
         <!--easy-i18n-->
         <dependency>
             <groupId>com.github.Ryan-Miao</groupId>
             <artifactId>easy-i18n</artifactId>
             <version>1.0</version>
         </dependency>
-
         <!--lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -160,6 +197,12 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.14.1</version>
+        </dependency>
+        <!-- OpenAPI3 (Swagger) -->
+        <dependency>
+            <groupId>com.smoketurner</groupId>
+            <artifactId>dropwizard-swagger</artifactId>
+            <version>2.0.0-1</version>
         </dependency>
     </dependencies>
 

@@ -3,6 +3,7 @@ package com.motaharinia.client.project.config.app;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,13 +18,13 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ProjectConfiguration extends Configuration {
-    //app
+    //App
     @Valid
     @NotNull
     @JsonProperty
     private ProjectAppConfiguration app;
 
-    //database
+    //Database
     @Valid
     @NotNull
     @JsonProperty
@@ -33,6 +34,10 @@ public class ProjectConfiguration extends Configuration {
         return database;
     }
 
+
+    //OpenApi3 (swagger)
+    @JsonProperty("swagger")
+    public SwaggerBundleConfiguration swaggerBundleConfiguration;
 
 //
 //    //grpc

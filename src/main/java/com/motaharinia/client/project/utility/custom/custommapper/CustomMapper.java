@@ -53,13 +53,13 @@ public interface CustomMapper {
     /**
      * متد مبدل میلی ثانیه زمان به شیی LocalDate
      *
-     * @param epochMiliLong میلی ثانیه زمان
+     * @param epochMilliLong میلی ثانیه زمان
      * @return خروجی: شیی LocalDate
      */
-    default LocalDate mapLongToLocalDate(Long epochMiliLong) {
+    default LocalDate mapLongToLocalDate(Long epochMilliLong) {
         //because of java8 compatibility:
 //        return instantLong == null ? null : LocalDate.ofInstant(Instant.ofEpochMilli(instantLong), ZoneId.systemDefault());
-        return epochMiliLong == null ? null : Instant.ofEpochMilli(epochMiliLong).atZone(ZoneId.systemDefault()).toLocalDate();
+        return epochMilliLong == null ? null : Instant.ofEpochMilli(epochMilliLong).atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
     //--------------------LocalDateTime-Long--------------------

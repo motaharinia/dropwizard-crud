@@ -36,4 +36,8 @@ public class MemberDto {
      */
     @Required
     private Long dateOfBirth;
+    /**
+     * تنظیمات عضو
+     */
+    private MemberSettingDto setting;
 }

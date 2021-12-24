@@ -1,6 +1,7 @@
 package com.motaharinia.client.project.config.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.motaharinia.client.project.config.app.mongodb.MongoDbConnection;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
@@ -11,13 +12,13 @@ import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ProjectConfiguration extends Configuration {
+public class ProjectConfiguration extends Configuration implements Serializable {
     //App
     @Valid
     @NotNull
@@ -34,6 +35,8 @@ public class ProjectConfiguration extends Configuration {
         return database;
     }
 
+    //MongoDB
+    private MongoDbConnection mongoDBConnection;
 
     //OpenApi3 (swagger)
     @JsonProperty("swagger")

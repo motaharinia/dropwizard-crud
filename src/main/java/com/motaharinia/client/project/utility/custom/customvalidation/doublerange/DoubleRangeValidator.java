@@ -14,7 +14,6 @@ public class DoubleRangeValidator implements ConstraintValidator<DoubleRange, Do
 
     private static final String MESSAGE_MIN = "CUSTOM_VALIDATION.DOUBLE_RANGE_MIN";
     private static final String MESSAGE_MAX = "CUSTOM_VALIDATION.DOUBLE_RANGE_MAX";
-    private static final String UTILITY_EXCEPTION_MIN_OR_MAX_IS_NEGATIVE = "UTILITY_EXCEPTION.MIN_OR_MAX_IS_NEGATIVE";
     private static final String UTILITY_EXCEPTION_MIN_IS_GREATER_THAN_MAX = "UTILITY_EXCEPTION.MIN_IS_GREATER_THAN_MAX";
 
     private String message;

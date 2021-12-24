@@ -1,0 +1,8 @@
+docker exec -it mymongodb /bin/bash
+mongo
+show dbs;
+use dropwizard_crud;
+use admin;
+db.auth("root", "123456");
+db.grantRolesToUser('dev', [{ role: 'dbOwner', db: 'dropwizard_crud' }]);
+db.getUser('dev');

@@ -5,6 +5,7 @@ app:
 
 server:
   type: default
+  maxThreads: 512
   adminMinThreads: 1
   adminMaxThreads: 64
   adminContextPath: /
@@ -43,8 +44,29 @@ database:
   # the minimum amount of time an connection must sit idle in the pool before it is eligible for eviction
   minIdleTime: 1 minute
 
+mongoDBConnection:
+  credentials:
+    username: "dev"
+    password: "123456"
+  seeds:
+    - host: "localhost"
+      port: 27017
+  database: "dropwizard_crud"
+
 swagger:
+  basePath: /swagger
   resourcePackage: com.motaharinia
+  scan: true
+  info:
+    version: "1.0.0"
+    title: "CRUD project"
+    description: "A simple CRUD API project"
+    termsOfService: "http://github.com/motaharinia"
+    contact:
+      name: "Mostafa Motaharinia"
+    license:
+      name: "Free License"
+
 
 # Logging settings.
 logging:

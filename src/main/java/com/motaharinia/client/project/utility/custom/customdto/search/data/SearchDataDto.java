@@ -1,10 +1,9 @@
 package com.motaharinia.client.project.utility.custom.customdto.search.data;
 
 
-
+import com.motaharinia.client.project.utility.custom.customdto.search.data.columnconfig.SearchDataColumnConfigDto;
 import com.motaharinia.client.project.utility.custom.customdto.search.filter.SearchFilterDto;
 import com.motaharinia.client.project.utility.tools.pagination.PaginationTools;
-import com.motaharinia.client.project.utility.custom.customdto.search.data.columnconfig.SearchDataColumnConfigDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

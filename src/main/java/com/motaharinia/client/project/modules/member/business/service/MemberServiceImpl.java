@@ -1,11 +1,12 @@
 package com.motaharinia.client.project.modules.member.business.service;
 
 
-import com.motaharinia.client.project.modules.member.persistence.Member;
-import com.motaharinia.client.project.modules.member.persistence.MemberDao;
 import com.motaharinia.client.project.modules.member.business.exception.MemberException;
 import com.motaharinia.client.project.modules.member.business.mapper.MemberMapper;
+import com.motaharinia.client.project.modules.member.persistence.Member;
+import com.motaharinia.client.project.modules.member.persistence.MemberDao;
 import com.motaharinia.client.project.modules.member.presentation.MemberDto;
+import com.motaharinia.client.project.modules.member.presentation.MemberSettingDto;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,21 +17,20 @@ import java.util.stream.Collectors;
  * @author eng.motahari@gmail.com<br>
  * کلاس پیاده سازی سرویس عضو
  */
-//@Service
-//@Transactional(rollbackFor = Exception.class)
 @Transaction
 public class MemberServiceImpl implements MemberService {
 
 
     private final MemberDao memberDao;
-    private final MemberMapper mapper;
+    private final MemberSettingService memberSettingService;
+    private final MemberMapper mapper= MemberMapper.INSTANCE;
     private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_DUPLICATE = "BUSINESS_EXCEPTION.NATIONAL_CODE_DUPLICATE";
     private static final String BUSINESS_EXCEPTION_ID_NOT_FOUND = "BUSINESS_EXCEPTION.ID_NOT_FOUND";
     private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND = "BUSINESS_EXCEPTION.NATIONAL_CODE_NOT_FOUND";
 
-    public MemberServiceImpl(MemberDao memberDao) {
+    public MemberServiceImpl(MemberDao memberDao, MemberSettingService memberSettingService) {
         this.memberDao = memberDao;
-        this.mapper = MemberMapper.INSTANCE;
+        this.memberSettingService = memberSettingService;
     }
 
     /**
@@ -51,6 +51,10 @@ public class MemberServiceImpl implements MemberService {
         Long id = memberDao.create(member);
         memberDto.setId(id);
 
+        //ثبت تنظیمات
+        MemberSettingDto documentDto= memberSettingService.create(memberDto.getSetting());
+        member.setSettingId(documentDto.getId());
+        memberDao.update(member);
         return memberDto;
     }
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -45,4 +46,9 @@ public class Member extends CustomEntity implements Serializable {
      * تاریخ تولد
      */
     private LocalDate dateOfBirth;
+    /**
+     *شناسه داکیومنت تنظیمات
+     */
+    @Column(name = "setting_id")
+    private Long settingId;
 }

@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Optional;
 
 @UseClasspathSqlLocator
-public interface CrudDao<T, Long>{
+public interface CrudDao<T, L>{
 
     @GetGeneratedKeys
     @SqlUpdate
-    Long create(@BindBean T entity);
+    L create(@BindBean T entity);
 
     @SqlQuery
-    Optional<T> findById(@Bind("id") Long id);
+    Optional<T> findById(@Bind("id") L id);
 
     @SqlQuery
     List<T> findAll();
@@ -28,5 +28,5 @@ public interface CrudDao<T, Long>{
     void update(@BindBean T entity);
 
     @SqlUpdate
-    void delete(@Bind("id") Long id);
+    void delete(@Bind("id") L id);
 }

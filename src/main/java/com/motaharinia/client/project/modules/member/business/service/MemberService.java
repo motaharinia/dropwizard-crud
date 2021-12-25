@@ -1,5 +1,6 @@
 package com.motaharinia.client.project.modules.member.business.service;
 
+import com.google.inject.ImplementedBy;
 import com.motaharinia.client.project.modules.member.presentation.MemberDto;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @author eng.motahari@gmail.com<br>
  * کلاس اینترفیس سرویس عضو
  */
+@ImplementedBy(MemberServiceImpl.class)
 public interface MemberService {
 
     /**

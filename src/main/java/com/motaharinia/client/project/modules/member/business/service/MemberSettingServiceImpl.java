@@ -1,6 +1,7 @@
 package com.motaharinia.client.project.modules.member.business.service;
 
 
+import com.google.inject.Inject;
 import com.motaharinia.client.project.modules.member.business.exception.MemberException;
 import com.motaharinia.client.project.modules.member.business.mapper.MemberSettingDocumentMapper;
 import com.motaharinia.client.project.modules.member.persistence.MemberSettingDocument;
@@ -23,6 +24,7 @@ public class MemberSettingServiceImpl implements MemberSettingService {
     private static final MemberSettingDocumentMapper mapper= MemberSettingDocumentMapper.INSTANCE;
     private static final String BUSINESS_EXCEPTION_ID_NOT_FOUND = "BUSINESS_EXCEPTION.ID_NOT_FOUND";
 
+    @Inject
     public MemberSettingServiceImpl(MemberSettingDocumentDao memberSettingDocumentDao) {
         this.memberSettingDocumentDao = memberSettingDocumentDao;
     }

@@ -1,10 +1,13 @@
 package com.motaharinia.client.project.config.grpc;
 
+import com.google.inject.Inject;
+import com.motaharinia.client.project.config.app.ProjectConfiguration;
 import com.motaharinia.client.project.modules.member.business.service.MemberService;
 import com.motaharinia.client.project.modules.member.rpc.server.MemberFindByIdGrpcImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import lombok.extern.slf4j.Slf4j;
+import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -15,8 +18,9 @@ public class GrpcServer {
     private final int port;
     private final Server server;
 
-    public GrpcServer(int port, MemberService memberService) {
-        this.port = port;
+    @Inject
+    public GrpcServer(ProjectConfiguration configuration,  MemberService memberService) {
+        this.port = configuration.getApp().getGrpcPort();
         this.server = ServerBuilder.forPort(port)
                 .addService(new MemberFindByIdGrpcImpl(memberService))
                 .build();

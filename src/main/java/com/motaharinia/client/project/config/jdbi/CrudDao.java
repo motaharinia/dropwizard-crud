@@ -1,4 +1,4 @@
-package com.motaharinia.client.project.config.data;
+package com.motaharinia.client.project.config.jdbi;
 
 
 import org.jdbi.v3.sqlobject.customizer.Bind;

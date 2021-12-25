@@ -1,2 +1,2 @@
-INSERT INTO member (id, first_name, last_name, national_code, date_of_birth)
-    value (:id, :firstName, :lastName, :nationalCode, :dateOfBirth);
+INSERT INTO member (id, first_name, last_name, national_code, date_of_birth, setting_id, hidden, invalid,create_at)
+    value (:id, :firstName, :lastName, :nationalCode, :dateOfBirth, :settingId , :hidden, :invalid,NOW());

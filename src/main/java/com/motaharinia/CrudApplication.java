@@ -1,34 +1,26 @@
 package com.motaharinia;
 
-import com.codahale.metrics.jdbi3.InstrumentedSqlLogger;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.inject.Injector;
 import com.miao.easyi18n.support.ResourceBundleMessageSource;
 import com.motaharinia.client.project.config.app.ProjectConfiguration;
+import com.motaharinia.client.project.config.jdbi.JdbiModule;
 import com.motaharinia.client.project.config.grpc.GrpcServer;
 import com.motaharinia.client.project.config.log.rest.*;
-import com.motaharinia.client.project.config.mongo.MongoDbFactoryConnection;
-import com.motaharinia.client.project.config.mongo.MongoDbManaged;
+import com.motaharinia.client.project.config.mongo.MongoModule;
 import com.motaharinia.client.project.config.mvc.MessageServiceImpl;
 import com.motaharinia.client.project.config.swagger.TryoutSwaggerApi;
 import com.motaharinia.client.project.config.swagger.TryoutSwaggerApiImpl;
-import com.motaharinia.client.project.modules.member.business.service.MemberService;
-import com.motaharinia.client.project.modules.member.business.service.MemberServiceImpl;
-import com.motaharinia.client.project.modules.member.business.service.MemberSettingService;
-import com.motaharinia.client.project.modules.member.business.service.MemberSettingServiceImpl;
-import com.motaharinia.client.project.modules.member.persistence.MemberDao;
-import com.motaharinia.client.project.modules.member.persistence.MemberSettingDocumentDao;
 import com.motaharinia.client.project.modules.member.presentation.MemberController;
 import com.motaharinia.client.project.utility.custom.customdto.exception.ExceptionDto;
-import com.motaharinia.client.project.utility.document.customcounter.CustomCounterDocumentDao;
 import com.motaharinia.client.project.utility.tools.string.MessageService;
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.jdbi3.bundles.JdbiExceptionsBundle;
 import io.dropwizard.jersey.protobuf.ProtobufBundle;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
@@ -44,11 +36,14 @@ import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.sqlobject.SqlObjectPlugin;
+import ru.vyarus.dropwizard.guice.GuiceBundle;
+import ru.vyarus.dropwizard.guice.injector.lookup.InjectorLookup;
+import ru.vyarus.dropwizard.guice.injector.lookup.InjectorProvider;
+import ru.vyarus.dropwizard.guice.module.installer.feature.jersey.ResourceInstaller;
 
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Optional;
 
 
 //https://howtodoinjava.com/dropwizard/tutorial-and-hello-world-example/
@@ -74,6 +69,13 @@ import java.io.IOException;
 //https://www.tabnine.com/code/java/methods/org.skife.jdbi.v2.DBI/setSQLLog
 //https://www.programcreek.com/java-api-examples/?api=org.jdbi.v3.core.Jdbi
 //https://www.tabnine.com/code/java/methods/io.dropwizard.jdbi.logging.LogbackLog/%3Cinit%3E
+
+//---------- jdbi3-transaction:
+//http://manikandan-k.github.io/2015/05/10/Transactions_in_jdbi.html
+//https://groups.google.com/g/jdbi/c/S1guX6DLNXQ
+//DBI.onDemand produces a DAO where every method call allocates a connection, runs a statement, and releases the connection (usually back to a pool). So effectively every method call is a distinct transaction, so that is not what you want.
+//https://xvik.github.io/dropwizard-guicey/4.2.2/extras/jdbi3/
+//https://xvik.github.io/dropwizard-guicey/4.2.2/examples/jdbi3/
 
 //---------- hikaricp:
 //https://github.com/mtakaki/dropwizard-hikaricp
@@ -111,11 +113,11 @@ import java.io.IOException;
 //https://github.com/grpc/grpc-java/blob/master/examples/src/main/java/io/grpc/examples/routeguide/RouteGuideServer.java
 //https://www.baeldung.com/grpc-introduction
 
-
 //---------- guice (injection):
 //https://github.com/google/guice
 //https://dzone.com/articles/dropwizard-and-guice
 //https://javaee.github.io/hk2/guice-bridge.html
+//https://xvik.github.io/dropwizard-guicey/4.0.1/getting-started/
 
 //---------- swagger3 (openapi):
 //https://github.com/lxucs/Tryout-Swagger
@@ -126,13 +128,24 @@ import java.io.IOException;
 //https://mongodb.github.io/mongo-java-driver/3.9/driver/tutorials/authentication/
 
 /**
- * Hello world!
+ * @author eng.motahari@gmail.com<br>
+ * کلاس اصلی اجرای اپلیکیشن
  */
 
 @Slf4j
 public class CrudApplication extends Application<ProjectConfiguration> {
 
-//    private GuiceBundle<ProjectConfiguration> guiceBundle;
+    private GuiceBundle guiceBundle;
+    private static Injector applicationInjector;
+    private InjectorProvider provider;
+
+    public static Injector getApplicationInjector() {
+        return applicationInjector;
+    }
+
+    private static void setApplicationInjector(Injector applicationInjector) {
+        CrudApplication.applicationInjector = applicationInjector;
+    }
 
     public static void main(String[] args) throws Exception {
         new CrudApplication().run(args);
@@ -147,6 +160,7 @@ public class CrudApplication extends Application<ProjectConfiguration> {
     @Override
     public void initialize(Bootstrap<ProjectConfiguration> bootstrap) {
         System.out.println("---------->>>>>>>>>> CrudApplication.initialize");
+        provider = new InjectorProvider(this);
 
         //تنظیمات OpenApi swagger
         bootstrap.addBundle(new SwaggerBundle<>() {
@@ -185,20 +199,19 @@ public class CrudApplication extends Application<ProjectConfiguration> {
         bootstrap.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         bootstrap.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
+        //guice (injection)
+        guiceBundle = GuiceBundle.builder()
+                .installers(ResourceInstaller.class)
+                .extensions(MemberController.class)
+                .modules(new JdbiModule(),new MongoModule())
+                .build();
+        bootstrap.addBundle(guiceBundle);
 
 //        bootstrap.addBundle(new CorsBundle());
+//        bootstrap.addBundle(new TemplateConfigBundle());
 //        bootstrap.addBundle(new RateLimitBundle(new InMemoryRateLimiterFactory()));
 //        bootstrap.addBundle(new CustomizeSwaggerBundle());
 
-
-        //guice (injection)
-//        System.out.println("getClass().getPackage().getName(): " + getClass().getPackage().getName());
-//        guiceBundle = GuiceBundle.<ProjectConfiguration>newBuilder()
-////                .addModule(new ServerModule())
-//                .setConfigClass(ProjectConfiguration.class)
-//                .enableAutoConfig("com.motaharinia")
-//                .build();
-//        bootstrap.addBundle(guiceBundle);
     }
 
     @Override
@@ -211,10 +224,10 @@ public class CrudApplication extends Application<ProjectConfiguration> {
         //تنظیمات OpenApi3 (swagger)
         registerOpenApi(environment.jersey());
         //تنظیم کلاسهای داده و ریسورس و grpc
-        registerServices(configuration,environment);
+        registerServices(configuration, environment);
+
+        setApplicationInjector(provider.get());
     }
-
-
 
 
     /**
@@ -284,44 +297,29 @@ public class CrudApplication extends Application<ProjectConfiguration> {
      * @throws IOException خطا
      */
     private void registerServices(ProjectConfiguration configuration, Environment environment) throws IOException {
-
-        //تنظیمات مانگو
-        final MongoDbFactoryConnection mongoDBManagerConn = new MongoDbFactoryConnection(configuration.getMongoDBConnection());
-        final MongoDbManaged mongoDBManaged = new MongoDbManaged(mongoDBManagerConn.getClient());
-        environment.lifecycle().manage(mongoDBManaged);
-
-        final CustomCounterDocumentDao customCounterDocumentDao = new CustomCounterDocumentDao(mongoDBManagerConn.getClient()
-                .getDatabase(configuration.getMongoDBConnection().getDatabase())
-                .getCollection("custom-counter"));
-
-        final MemberSettingDocumentDao memberSettingDocumentDao = new MemberSettingDocumentDao(mongoDBManagerConn.getClient()
-                .getDatabase(configuration.getMongoDBConnection().getDatabase())
-                .getCollection("member-setting"), customCounterDocumentDao);
-
-        final MemberSettingService memberSettingService = new MemberSettingServiceImpl(memberSettingDocumentDao);
-
-
         //تنظیمات دیتابیس
-        final JdbiFactory factory = new JdbiFactory();
-        final Jdbi jdbi = factory
-                .build(environment, configuration.getDataSourceFactory(), "mysql")
-                .installPlugin(new SqlObjectPlugin());
-//                        .setSqlLogger(new Slf4JSqlLogger());
-        jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
-//        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
-
-        //تعریف کلاسهای مدیریت دسترسی داده
-        final MemberDao memberDao = jdbi.onDemand(MemberDao.class);
-
-        //تعریف کلاسهای سرویس
-        final MemberService memberService = new MemberServiceImpl(memberDao, memberSettingService);
-
-        //تعریف کلاسهای کنترلر
-        environment.jersey().register(new MemberController(memberService));
+//        final JdbiFactory factory = new JdbiFactory();
+//        final Jdbi jdbi = factory
+//                .build(environment, configuration.getDataSourceFactory(), "mysql")
+//                .installPlugin(new SqlObjectPlugin());
+////                        .setSqlLogger(new Slf4JSqlLogger());
+//        jdbi.setSqlLogger(new InstrumentedSqlLogger(environment.metrics()));
+////        dbi.setSQLLog(new LogbackLog(LOGGER, Level.TRACE));
+//
+//        //تعریف کلاسهای مدیریت دسترسی داده
+//        final MemberDao memberDao = jdbi.onDemand(MemberDao.class);
+//
+//        //تعریف کلاسهای سرویس
+//        final MemberService memberService = new MemberServiceImpl(memberDao, memberSettingService);
+//
+//        //تعریف کلاسهای کنترلر
+//        environment.jersey().register(new MemberController(memberService));
 
         //تنظیمات grpc
-        GrpcServer grpcServer = new GrpcServer(configuration.getApp().getGrpcPort(), memberService);
-        grpcServer.start();
-//        grpcServer.blockUntilShutdown();
+        Optional<GrpcServer> grpcServerOptional = InjectorLookup.getInstance(this, GrpcServer.class);
+        if( grpcServerOptional.isPresent()){
+            grpcServerOptional.get().start();
+//            grpcServerOptional.get().blockUntilShutdown();
+        }
     }
 }

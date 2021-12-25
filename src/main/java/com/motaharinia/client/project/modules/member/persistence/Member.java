@@ -50,6 +50,5 @@ public class Member extends CustomEntity implements Serializable {
     /**
      *شناسه داکیومنت تنظیمات
      */
-    @Column(name = "setting_id")
     private Long settingId;
 }

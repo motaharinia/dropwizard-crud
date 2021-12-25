@@ -1,6 +1,6 @@
 package com.motaharinia.client.project.modules.member.persistence;
 
-import com.motaharinia.client.project.config.data.CrudDao;
+import com.motaharinia.client.project.config.jdbi.CrudDao;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;

@@ -5,6 +5,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.bson.Document;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class CustomCounterDocumentDao {
@@ -19,7 +20,11 @@ public class CustomCounterDocumentDao {
     public CustomCounterDocument save(@NotNull final CustomCounterDocument document) {
         final Document mongoDocument = new Document("_id", document.getId())
                 .append("primary_key", document.getPrimaryKey());
-        documentCollection.insertOne(mongoDocument);
+        if (ObjectUtils.isEmpty(document.getId())) {
+            documentCollection.insertOne(mongoDocument);
+        } else {
+            documentCollection.updateOne(new Document("_id", document.getId()),  new Document("$set",mongoDocument));
+        }
         return document;
     }
 

@@ -1,5 +1,6 @@
 package com.motaharinia.client.project.modules.member.presentation;
 
+import com.google.inject.Inject;
 import com.motaharinia.client.project.modules.member.business.service.MemberService;
 import com.motaharinia.client.project.utility.custom.customdto.ClientResponseDto;
 import io.swagger.annotations.Api;
@@ -27,6 +28,7 @@ public class MemberController {
      */
     private static final String FORM_SUBMIT_SUCCESS = "USER_MESSAGE.FORM_SUBMIT_SUCCESS";
 
+    @Inject
     public MemberController( MemberService memberService) {
         this.memberService = memberService;
     }

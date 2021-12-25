@@ -8,17 +8,17 @@ import javax.persistence.Id;
 
 
 /**
- *  کلاس داکیومنت شمارنده
+ * کلاس داکیومنت شمارنده
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomCounterDocument {
     /**
-     *شناسه رشته ای کلاسی که میخواهیم برای آن کلید اصلی بسازیم
+     * شناسه رشته ای کلاسی که میخواهیم برای آن کلید اصلی بسازیم
      */
     @Id
-    private String  id;
+    private String id;
 
     /**
      * کلید اصلی

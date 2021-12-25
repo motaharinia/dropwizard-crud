@@ -27,8 +27,7 @@ public class MemberSettingDocumentDao {
         if (ObjectUtils.isEmpty(document.getId())) {
             documentCollection.insertOne(Objects.requireNonNull(toMongo(document)));
         } else {
-            documentCollection.updateOne(new Document("_id", document.getId()), Objects.requireNonNull(toMongo(document))
-            );
+            documentCollection.updateOne(new Document("_id", document.getId()), new Document("$set", Objects.requireNonNull(toMongo(document))));
         }
     }
 

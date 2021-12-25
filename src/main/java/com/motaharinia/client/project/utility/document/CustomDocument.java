@@ -13,12 +13,6 @@ import java.time.LocalDateTime;
  *     این کلاس به عنوان کلاس پدر تمام کلاسهای داکیومنت آماده شده است و به تمام داکیومنت ها فیلدهای استانداردی را اضافه میکتد
  */
 
-
-//https://docs.spring.io/spring-data/data-mongo/docs/current/reference/html/#mapping-usage-annotations
-//https://codeboje.de/spring-data-auditing/
-
-
-//@Document(collection = "custom_document")
 @Getter
 @Setter
 public class CustomDocument implements Serializable {

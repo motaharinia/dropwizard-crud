@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * @author eng.motahari@gmail.com<br>
+ * کلاس دسترسی داده تنظیمات عضو
+ */
 public class MemberSettingDocumentDao {
 
     private final MongoCollection<Document> documentCollection;
@@ -19,15 +23,13 @@ public class MemberSettingDocumentDao {
         this.customCounterDocumentDao = customCounterDocumentDao;
     }
 
-    @NotNull
-    public MemberSettingDocument save(@NotNull final MemberSettingDocument document) {
+    public void save(@NotNull final MemberSettingDocument document) {
         if (ObjectUtils.isEmpty(document.getId())) {
             documentCollection.insertOne(Objects.requireNonNull(toMongo(document)));
         } else {
             documentCollection.updateOne(new Document("_id", document.getId()), Objects.requireNonNull(toMongo(document))
             );
         }
-        return document;
     }
 
     @NotNull
@@ -51,8 +53,7 @@ public class MemberSettingDocumentDao {
         return resultSet;
     }
 
-    @NotNull
-    public void delete(@NotNull final MemberSettingDocument document){
+    public void delete(@NotNull final MemberSettingDocument document) {
         documentCollection.deleteOne(new Document("_id", document.getId()));
     }
 

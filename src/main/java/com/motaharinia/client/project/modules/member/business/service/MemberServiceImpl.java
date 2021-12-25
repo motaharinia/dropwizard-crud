@@ -23,7 +23,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberDao memberDao;
     private final MemberSettingService memberSettingService;
-    private final MemberMapper mapper= MemberMapper.INSTANCE;
+    private static final MemberMapper mapper= MemberMapper.INSTANCE;
     private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_DUPLICATE = "BUSINESS_EXCEPTION.NATIONAL_CODE_DUPLICATE";
     private static final String BUSINESS_EXCEPTION_ID_NOT_FOUND = "BUSINESS_EXCEPTION.ID_NOT_FOUND";
     private static final String BUSINESS_EXCEPTION_NATIONAL_CODE_NOT_FOUND = "BUSINESS_EXCEPTION.NATIONAL_CODE_NOT_FOUND";
@@ -47,7 +47,7 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberException(memberDto.getNationalCode(), BUSINESS_EXCEPTION_NATIONAL_CODE_DUPLICATE + "::" + memberDto.getNationalCode(), "");
         }
         //ثبت
-        Member member = this.mapper.toEntity(memberDto);
+        Member member = mapper.toEntity(memberDto);
         Long id = memberDao.create(member);
         memberDto.setId(id);
 

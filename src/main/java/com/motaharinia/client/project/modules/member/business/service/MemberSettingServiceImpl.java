@@ -2,7 +2,6 @@ package com.motaharinia.client.project.modules.member.business.service;
 
 
 import com.motaharinia.client.project.modules.member.business.exception.MemberException;
-import com.motaharinia.client.project.modules.member.business.mapper.MemberMapper;
 import com.motaharinia.client.project.modules.member.business.mapper.MemberSettingDocumentMapper;
 import com.motaharinia.client.project.modules.member.persistence.MemberSettingDocument;
 import com.motaharinia.client.project.modules.member.persistence.MemberSettingDocumentDao;
@@ -17,13 +16,11 @@ import java.util.stream.Collectors;
  * @author eng.motahari@gmail.com<br>
  * کلاس پیاده سازی سرویس تنظیمات عضو
  */
-//@Service
-//@Transactional(rollbackFor = Exception.class)
 public class MemberSettingServiceImpl implements MemberSettingService {
 
 
     private final MemberSettingDocumentDao memberSettingDocumentDao;
-    private final MemberSettingDocumentMapper mapper= MemberSettingDocumentMapper.INSTANCE;
+    private static final MemberSettingDocumentMapper mapper= MemberSettingDocumentMapper.INSTANCE;
     private static final String BUSINESS_EXCEPTION_ID_NOT_FOUND = "BUSINESS_EXCEPTION.ID_NOT_FOUND";
 
     public MemberSettingServiceImpl(MemberSettingDocumentDao memberSettingDocumentDao) {
@@ -40,7 +37,7 @@ public class MemberSettingServiceImpl implements MemberSettingService {
     @NotNull
     public MemberSettingDto create(@NotNull MemberSettingDto memberSettingDto) {
         //ثبت
-        MemberSettingDocument document = this.mapper.toDocument(memberSettingDto);
+        MemberSettingDocument document = mapper.toDocument(memberSettingDto);
         memberSettingDocumentDao.save(document);
         memberSettingDto.setId(document.getId());
         return memberSettingDto;

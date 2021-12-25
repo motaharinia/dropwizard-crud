@@ -7,6 +7,11 @@ import org.jdbi.v3.sqlobject.statement.SqlQuery;
 
 import java.util.Optional;
 
+/**
+ * @author eng.motahari@gmail.com<br>
+ * کلاس دسترسی داده عضو
+ */
+
 //@AllowUnusedBindings
 @RegisterBeanMapper(Member.class)
 public interface MemberDao extends CrudDao<Member,Long> {

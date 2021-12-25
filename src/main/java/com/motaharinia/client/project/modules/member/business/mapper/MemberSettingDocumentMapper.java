@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * @author eng.motahari@gmail.com<br>
- * کلاس مبدل داکیومنت و مدل عضو
+ * کلاس مبدل داکیومنت و مدل تنظیمات عضو
  */
 @Mapper
 public interface MemberSettingDocumentMapper extends CustomMapper {

@@ -15,8 +15,6 @@ import java.util.Set;
  * @author eng.motahari@gmail.com<br>
  * کلاس داکیومنت تنظیمات عضو
  */
-
-
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)

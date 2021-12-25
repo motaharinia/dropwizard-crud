@@ -9,10 +9,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+/**
+ * @author eng.motahari@gmail.com<br>
+ * کلاس کنترلر عضو
+ */
+
 @Path("/api/v1.0/member")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Api(description = "Tryout Swagger", protocols = "http")
+@Api(description = "Member Swagger", protocols = "http")
 public class MemberController {
 
     private final MemberService memberService;

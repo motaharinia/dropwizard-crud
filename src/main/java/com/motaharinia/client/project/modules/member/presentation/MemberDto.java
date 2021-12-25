@@ -6,7 +6,10 @@ import com.motaharinia.client.project.utility.custom.customvalidation.stringleng
 import lombok.Data;
 
 
-
+/**
+ * @author eng.motahari@gmail.com<br>
+ * کلاس مدل عضو
+ */
 @Data
 public class MemberDto {
     /**

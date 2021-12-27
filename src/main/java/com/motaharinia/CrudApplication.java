@@ -76,6 +76,7 @@ import java.util.Optional;
 //DBI.onDemand produces a DAO where every method call allocates a connection, runs a statement, and releases the connection (usually back to a pool). So effectively every method call is a distinct transaction, so that is not what you want.
 //https://xvik.github.io/dropwizard-guicey/4.2.2/extras/jdbi3/
 //https://xvik.github.io/dropwizard-guicey/4.2.2/examples/jdbi3/
+//https://github.com/nirlendu/dropwizard-skeleton/blob/16ac89b16e1da20915df79710bde18425bf6839c/app/pom.xml
 
 //---------- hikaricp:
 //https://github.com/mtakaki/dropwizard-hikaricp
@@ -204,6 +205,7 @@ public class CrudApplication extends Application<ProjectConfiguration> {
                 .installers(ResourceInstaller.class)
                 .extensions(MemberController.class)
                 .modules(new JdbiModule(),new MongoModule())
+                .printDiagnosticInfo()
                 .build();
         bootstrap.addBundle(guiceBundle);
 

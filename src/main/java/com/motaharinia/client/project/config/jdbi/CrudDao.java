@@ -7,10 +7,12 @@ import org.jdbi.v3.sqlobject.locator.UseClasspathSqlLocator;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
+import ru.vyarus.guicey.jdbi3.installer.repository.JdbiRepository;
 
 import java.util.List;
 import java.util.Optional;
 
+@JdbiRepository
 @UseClasspathSqlLocator
 public interface CrudDao<T, L>{
 

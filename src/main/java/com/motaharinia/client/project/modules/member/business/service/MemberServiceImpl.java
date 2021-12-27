@@ -2,15 +2,16 @@ package com.motaharinia.client.project.modules.member.business.service;
 
 
 import com.google.inject.Inject;
-import com.google.inject.Provides;
 import com.motaharinia.client.project.modules.member.business.exception.MemberException;
 import com.motaharinia.client.project.modules.member.business.mapper.MemberMapper;
 import com.motaharinia.client.project.modules.member.persistence.Member;
 import com.motaharinia.client.project.modules.member.persistence.MemberDao;
 import com.motaharinia.client.project.modules.member.presentation.MemberDto;
 import com.motaharinia.client.project.modules.member.presentation.MemberSettingDto;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
 import org.jetbrains.annotations.NotNull;
+import ru.vyarus.guicey.jdbi3.tx.InTransaction;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +43,7 @@ public class MemberServiceImpl implements MemberService {
      * @param memberDto مدل ثبت
      * @return خروجی: مدل ثبت حاوی شناسه
      */
-    @Transaction
+    @InTransaction
     @Override
     @NotNull
     public MemberDto create(@NotNull MemberDto memberDto) {
@@ -54,6 +55,10 @@ public class MemberServiceImpl implements MemberService {
         Member member = mapper.toEntity(memberDto);
         member.setId(memberDao.create(member));
         memberDto.setId(member.getId());
+
+        if(!ObjectUtils.isEmpty(memberDto.getId())  ){
+            throw new RuntimeException("TEEEEEEEEEEEEEEEEEEEEST");
+        }
 
         //ثبت تنظیمات
         MemberSettingDto documentDto= memberSettingService.create(memberDto.getSetting());
